@@ -69,6 +69,19 @@ Ausgehend benötigt der Bot HTTPS/WSS auf TCP 443 und DNS; TCP 80 zusätzlich f�
 
 ## Updates und Betrieb
 
+### Build ohne lokale Testdaten
+
+Der Build-Kontext erlaubt ausschließlich `Dockerfile`, `.dockerignore`, `requirements.txt`, `pyproject.toml` und `sirmagick/*.py`. Lokale Bilder, Beispiele, Ausgaben und `.env` gelangen dadurch nicht in den Build-Kontext. Der Dockerfile kopiert zusätzlich ausdrücklich nur `.py`-Dateien; Setuptools übernimmt keine Paketdaten. Ein Build-Schritt prüft das Anwendungsverzeichnis und das installierte SirMagick-Paket auf Bilddateien und `.env` und bricht bei einem Fund ab. Die offiziellen `.task`-Modelle sind erlaubt.
+
+Bei einem älteren Image mit unerwünschten Daten ein frisches Image bauen und prüfen:
+
+```sh
+docker build --no-cache --platform linux/amd64 -t kurdy/sirmagick:latest .
+docker run --rm --entrypoint sh kurdy/sirmagick:latest -c 'find /app -type f | sort'
+```
+
+Erst nach Prüfung und Container-Test das neue Image pushen. Auf dem Server anschließend `docker compose pull` und `docker compose up -d --force-recreate` ausführen. Der Image-Neubau entfernt keine alten Container, lokalen Images, Build-Caches oder bereits veröffentlichten alten Tags. Falls alte Versionen Testbilder enthalten, müssen diese separat gezielt entfernt werden. Laufende Aufträge legen Bilder nur temporär im Container unter `/tmp/sirmagick/jobs` ab; diese Arbeitsdateien werden nach dem Auftrag entfernt und sind kein Bestandteil des gebauten Images.
+
 Nach Codeänderungen Image erneut bauen, testen und pushen. Auf dem Server:
 
 ```sh
