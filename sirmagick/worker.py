@@ -47,7 +47,7 @@ class ProcessWorker:
 def serve():
     from contextlib import redirect_stdout
     from .images import load_image
-    from .bot_commands import EFFECTS
+    from .effects import EFFECTS, FACE_EFFECTS, resolve_effect, apply_effect
     detector = None
     protocol = sys.stdout
     try:
@@ -58,19 +58,20 @@ def serve():
                     effect = request["effect"]
                     if effect not in EFFECTS:
                         raise ValueError("Unbekannter Effekt.")
+                    was_random = effect == "random"
+                    effect = resolve_effect(effect)
                     image = load_image(Path(request["source"]))
-                    if effect == "deepfry":
-                        from .deepfry import apply_deepfry
-                        result = apply_deepfry(image)
-                    else:
+                    detection = None
+                    if effect in FACE_EFFECTS:
                         if detector is None:
                             from .detection import Detector
                             detector = Detector(Path(request["models"]), request["max_side"], request["max_people"])
                         detection = detector.detect(image)
                         detection.require("face")
-                        from importlib import import_module
-                        result = getattr(import_module("sirmagick." + effect), "apply_" + effect)(image, detection)
+                    result = apply_effect(image, detection, effect)
                     output = Path(request["destination"]).with_suffix(".png")
+                    if was_random:
+                        output = output.with_name(output.stem+"-random-"+effect+output.suffix)
                     result.save(output)
                     if output.stat().st_size > request["max_output"]:
                         if result.convert("RGBA").getchannel("A").getextrema() == (255, 255):

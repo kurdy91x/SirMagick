@@ -71,6 +71,28 @@ Upload an image to a channel and mention the bot:
 | `chudthor` | Creates a bizarre, more angular facial distortion |
 | `deepfry` | Adds exaggerated colors, noise, JPEG artifacts, and random stickers |
 | `help` | Shows the command overview |
+| `fatmagic` | Widens the face and detected torso (approximate body shape) |
+| `tinyface` | Shrinks the eyes, nose, and mouth together |
+| `bigmouth` | Enlarges the mouth |
+| `googly` | Enlarges the eyes |
+| `eyeswap` | Replaces the nose and mouth with copies of an eye |
+| `wide` | Stretches the entire image to three times its width |
+| `zoom` | Adds zoom ghost exposures |
+| `tunnel` | Creates a rotating tunnel of nested image copies |
+| `kaleidoscope` | Mirrors the image into six sectors |
+| `swirl` | Twists the image into a spiral |
+| `rgbghost` | Shifts color channels apart |
+| `droste` | Repeats the image in a logarithmic spiral |
+| `complexsquare` | Folds image coordinates using a complex square |
+| `complexexp` | Warps the image using a complex exponential |
+| `logpolar` | Unwraps circles into straight bands |
+| `inversion` | Inverts the center and outer image through complex coordinates |
+| `sweat` | Adds an anime sweat drop |
+| `sparkle` | Adds anime sparkle stars |
+| `angry` | Adds an anime anger symbol |
+| `random` | Selects a random available effect and names it in the result |
+
+Trippy and complex-coordinate effects do not require faces. `random` can select a face effect; if no face is detected, the job fails with the usual error message. Repeated `wide` applications increase the width again, up to the 24-million-pixel output limit. `uwu` and `blush` are still being refined and are not enabled as bot commands.
 
 Without a URL, the bot uses an image attached to your command or the latest image in the channel. Bot-generated images can be processed again. Face effects apply to all detected faces; if no face is detected, the job fails with an error message. GIFs are processed as a single image using their first frame.
 

@@ -22,15 +22,17 @@ Attach Files. Mit der erzeugten URL den Bot auf den Server einladen. Für Thread
    .venv\Scripts\python.exe -m sirmagick bot
    ```
 
-Modelle müssen für Gesichtseffekte bereits unter `models/` liegen. `deepfry` funktioniert ohne Modelle. Modelle werden bei der ersten Gesichtsanfrage geladen und im Bildprozess wiederverwendet.
+Modelle müssen für Gesichtseffekte bereits unter `models/` liegen. `deepfry`, `wide` sowie alle Trippy- und Euler-Modi funktionieren ohne Modelle. Modelle werden bei der ersten Gesichtsanfrage geladen und im Bildprozess wiederverwendet.
 
 ## Verwendung
 
-Im Kanal `/` tippen und SirMagick auswählen: Discord zeigt `/blockface`, `/warpface`, `/chudthor`, `/deepfry` und `/help` mit Beschreibungen. Jeder Effekt bietet die optionalen Felder `bild` (Datei hochladen) und `url`. Nur eines davon angeben; ohne beide wird das letzte Bild im Kanal verwendet. `/help` zeigt die Übersicht nur dem aufrufenden Nutzer.
+Aktuelle Modi: `blockface`, `warpface`, `chudthor`, `deepfry`, `fatmagic`, `tinyface`, `bigmouth`, `googly`, `eyeswap`, `wide`, `zoom`, `tunnel`, `kaleidoscope`, `swirl`, `rgbghost`, `droste`, `complexsquare`, `complexexp`, `logpolar`, `inversion`, `sweat`, `sparkle`, `angry`, `random` und `help`. Alle funktionieren per `@sirmagick MODUS` und werden auch als Slash-Befehle registriert. `uwu` und `blush` bleiben bis zur optischen Abstimmung deaktiviert. Eine Übersicht steht in `README.md`.
+
+Im Kanal `/` tippen und SirMagick auswählen: Discord zeigt die registrierten Befehle mit Beschreibungen. Jeder Effekt bietet die optionalen Felder `bild` (Datei hochladen) und `url`. Nur eines davon angeben; ohne beide wird das letzte Bild im Kanal verwendet. `/help` zeigt die Übersicht nur dem aufrufenden Nutzer.
 
 Die Slash-Befehle werden beim Bot-Start global registriert. Nach dem Update den Bot neu starten; die Anzeige in Discord kann etwas dauern. Fehlen die Befehle, die Einladung mit `applications.commands` prüfen und gegebenenfalls erneut autorisieren. Nutzer benötigen im Kanal die Berechtigung **Use Application Commands**. Bei einer fehlgeschlagenen Registrierung erscheint eine Warnung in der Konsole; Befehle per Erwähnung funktionieren weiterhin.
 
-Ein Bild hochladen und den Bot tatsächlich erwähnen: `@SirMagick blockface`. Alternativ `@SirMagick deepfry https://example.org/bild.jpg`. Verfügbar: `chudthor`, `warpface`, `blockface`, `deepfry`, `help`.
+Ein Bild hochladen und den Bot erwähnen: `@SirMagick blockface`. Alternativ `@SirMagick droste https://example.org/bild.jpg`. Auch getipptes `@sirmagick` wird erkannt, wenn Nachrichteninhalte freigegeben sind.
 
 Ein Anhang am Befehl gewinnt; andernfalls wird vor dem Befehl nach dem letzten Bild gesucht, standardmäßig in 50 Nachrichten. Bilder des Bots sind ebenfalls gültige Eingaben. Bot-Nachrichten selbst lösen keine Befehle aus. GIFs werden als erstes Einzelbild verarbeitet. Gesichtseffekte bearbeiten alle erkannten Gesichter.
 

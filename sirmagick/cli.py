@@ -43,6 +43,15 @@ def main(argv=None) -> int:
     deepfry = commands.add_parser("deepfry", help="Farben, Kontrast, Schärfe und JPEG-Artefakte übersteuern")
     deepfry.add_argument("source", type=Path, nargs="?", default=Path("images"))
     deepfry.add_argument("--output", type=Path, default=Path("output-deepfry"))
+    from .effects import DESCRIPTIONS
+    for name in sorted(set(DESCRIPTIONS)-{"chudthor", "warpface", "blockface", "deepfry", "random"}):
+        effect_parser = commands.add_parser(name, help=DESCRIPTIONS[name])
+        effect_parser.add_argument("source", type=Path, nargs="?", default=Path("images"))
+        effect_parser.add_argument("--output", type=Path, default=Path("output-"+name))
+        effect_parser.add_argument("--models", type=Path, default=Path("models"))
+        effect_parser.add_argument("--max-side", type=int, default=1024)
+        effect_parser.add_argument("--max-people", type=int, default=20)
+        effect_parser.set_defaults(require="face")
     commands.add_parser("bot", help="Discord-Bot starten (.env)")
     args = parser.parse_args(argv)
     try:
@@ -63,18 +72,15 @@ def main(argv=None) -> int:
 
 def run_detection(args) -> int:
     from .images import image_paths, load_image
-    if args.command == "deepfry":
-        from .deepfry import apply_deepfry
-        processor = apply_deepfry
+    from .effects import FACE_EFFECTS, apply_effect
+    processor = lambda image, detection=None: apply_effect(image, detection, args.command)
+    if args.command not in FACE_EFFECTS and args.command != "detect":
         detector_context = lambda: nullcontext(None)
     else:
         from .detection import Detector
-        from .preview import render_preview
-        from .chudthor import apply_chudthor
-        from .warpface import apply_warpface
-        from .blockface import apply_blockface
-        processor = {"chudthor": apply_chudthor, "warpface": apply_warpface,
-                     "blockface": apply_blockface, "detect": render_preview}[args.command]
+        if args.command == "detect":
+            from .preview import render_preview
+            processor = render_preview
         detector_context = lambda: Detector(args.models.resolve(), args.max_side, args.max_people)
 
     source, output = args.source.resolve(), args.output.resolve()
@@ -101,7 +107,7 @@ def run_detection(args) -> int:
                 image = load_image(path)
                 if detector is None:
                     result = None
-                    details = {"effect": "deepfry", "width": image.width, "height": image.height,
+                    details = {"effect": args.command, "width": image.width, "height": image.height,
                                "requires_detection": False}
                 else:
                     result = detector.detect(image)

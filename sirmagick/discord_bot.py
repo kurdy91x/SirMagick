@@ -12,6 +12,7 @@ import discord
 from .bot_commands import find_image, parse_command
 from .downloads import create_download_session, download_image
 from .worker import ProcessWorker
+from .effects import DESCRIPTIONS
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.INFO)
@@ -22,7 +23,12 @@ HELP = (
     "`/warpface` – Kopf vergrößern und Gesichtszüge verkleinern\n"
     "`/chudthor` – Skurrile, kantigere Gesichtsverformung\n"
     "`/deepfry` – Übertriebene Farben, JPEG-Artefakte und zufällige Sticker\n"
-    "`/help` – Diese Hilfe\n\n"
+    "**Neue Gesichtseffekte:** `/fatmagic`, `/tinyface`, `/bigmouth`, `/googly`, `/eyeswap`\n"
+    "**Ultrawide:** `/wide` – ganzes Bild auf dreifache Breite ziehen\n"
+    "**Trippy:** `/zoom`, `/tunnel`, `/kaleidoscope`, `/swirl`, `/rgbghost`\n"
+    "**Euler:** `/droste`, `/complexsquare`, `/complexexp`, `/logpolar`, `/inversion`\n"
+    "**Anime:** `/sweat`, `/sparkle`, `/angry`\n"
+    "`/random` – zufälliger Effekt; `/help` – diese Hilfe\n\n"
     "Bei jedem Effekt kannst du **bild** hochladen oder eine **url** angeben. "
     "Ohne beides wird das letzte Bild im Kanal verwendet, auch ein vorheriges Bot-Ergebnis. "
     "Alle erkannten Gesichter werden bearbeitet. GIFs: erstes Einzelbild.\n"
@@ -83,12 +89,7 @@ class MagickBot(discord.Client):
                     and (not self.config.channel_ids or channel.id in self.config.channel_ids))
 
     def register_commands(self):
-        descriptions = {
-            "blockface": "Gesicht verkleinern und den äußeren Hautstreifen strecken",
-            "warpface": "Kopf vergrößern und Gesichtszüge verkleinern",
-            "chudthor": "Gesicht skurril und kantiger verformen",
-            "deepfry": "Farben und JPEG-Artefakte übertreiben, Sticker hinzufügen",
-        }
+        descriptions = DESCRIPTIONS
 
         def effect_command(effect):
             @discord.app_commands.describe(bild="Bild hochladen; sonst letztes Bild im Kanal",
@@ -236,7 +237,10 @@ class MagickBot(discord.Client):
                 }, cfg.process_timeout)
                 attachment = discord.File(output, filename=output.name)
                 try:
-                    await self.reply(job.message, job.command.effect, file=attachment)
+                    label = job.command.effect
+                    if label == "random" and "-random-" in output.stem:
+                        label = "random → " + output.stem.split("-random-", 1)[1]
+                    await self.reply(job.message, label, file=attachment)
                 finally:
                     attachment.close()
                 await self.status(job, "Fertig.")

@@ -2,6 +2,17 @@
 
 Ziel: Ein Discord-Bot im Docker-Container, der Bilder aus dem Chat oder einer URL bearbeitet und zurückpostet.
 
+## Aktueller Stand der neuen Modi
+
+- [x] Gesichtseffekte `fatmagic`, `tinyface`, `bigmouth`, `googly`, `eyeswap` und Ultrawide `wide` in Bot, Worker und CLI integrieren.
+- [x] Trippy-Modi `zoom`, `tunnel`, `kaleidoscope`, `swirl`, `rgbghost` integrieren.
+- [x] Euler-Modi `droste`, `complexsquare`, `complexexp`, `logpolar`, `inversion` integrieren.
+- [x] Anime-Decals `sweat`, `sparkle`, `angry` und botseitigen `random`-Modus integrieren.
+- [x] Gemeinsamen Effektkatalog, Hilfe und READMEs aktualisieren; 37 automatisierte Tests und alle 24 aktiven Modi mit echtem CPU-Worker prüfen.
+- [x] Lokale dreispaltige Vergleiche unter ignoriertem `examples/` ablegen; Bildmaterial vom Docker-Build ausschließen.
+- [ ] Überarbeitete `uwu`-/`blush`-Optik abstimmen; bis dahin keine Bot-Befehle dafür registrieren.
+- [ ] Neue Modi im neu gebauten Container auf dem Server prüfen.
+
 ## Festgelegte Grundlagen
 
 - [x] Programmiersprache: Python (lokal verfügbar: Python 3.12.10).

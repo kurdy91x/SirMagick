@@ -45,7 +45,8 @@ class BotTests(unittest.IsolatedAsyncioTestCase):
         attachment = SimpleNamespace(filename="test.png")
         try:
             commands = {command.name: command for command in bot.tree.get_commands()}
-            self.assertEqual(set(commands), {"help", "deepfry", "blockface", "warpface", "chudthor"})
+            from sirmagick.effects import EFFECTS
+            self.assertEqual(set(commands), EFFECTS | {"help"})
             schema = commands["blockface"].to_dict(bot.tree)
             self.assertEqual([option["name"] for option in schema["options"]], ["bild", "url"])
             await commands["blockface"].callback(interaction, bild=attachment)

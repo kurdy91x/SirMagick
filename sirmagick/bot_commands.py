@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import re
 from urllib.parse import urlsplit
 
-EFFECTS = frozenset({"chudthor", "warpface", "blockface", "deepfry"})
+from .effects import EFFECTS
 
 
 @dataclass(frozen=True)
@@ -21,7 +21,7 @@ def parse_command(content: str, bot_id: int) -> Command | None:
         return Command("help")
     effect = parts[0].lower()
     if effect not in EFFECTS | {"help"}:
-        raise ValueError("Unbekannter Befehl. Verfügbar: chudthor, warpface, blockface, deepfry, help.")
+        raise ValueError("Unbekannter Befehl. @sirmagick help zeigt alle Effekte.")
     if len(parts) > 2 or (effect == "help" and len(parts) > 1):
         raise ValueError("Syntax: @SirMagick effekt [bild-url]")
     url = parts[1].strip("<>") if len(parts) == 2 else None
