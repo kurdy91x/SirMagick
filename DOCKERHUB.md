@@ -147,8 +147,6 @@ docker compose pull
 docker compose up -d
 ```
 
-Source code and detailed setup instructions: [GitLab - SirMagick](https://gitlab.kurdy.de/kurdy/sirmagick).
-
 SirMagick's own code is MIT licensed. The image includes `/app/LICENSE`,
 `/app/THIRD_PARTY_NOTICES.md`, and `/app/licenses/Apache-2.0.txt`.
 Dependencies, models, and operating system packages retain their own licenses.
