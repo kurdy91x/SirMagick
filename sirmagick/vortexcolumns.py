@@ -6,6 +6,9 @@ from PIL import Image
 from .chudthor import OVAL
 from .warpface import EYES, MOUTH
 
+MAX_RENDER_SIDE = 1600
+STRIPE_ROWS = 96
+
 
 def apply_vortexcolumns(image, detection, feature="face"):
     detection.require("face")
@@ -40,33 +43,43 @@ def apply_vortexcolumns(image, detection, feature="face"):
         texture.paste(patch, (0, index*tile_height))
     atlas = np.asarray(texture, np.float32).copy()
     atlas[..., :3] *= atlas[..., 3:4]/255
-    pixels = np.array(image.convert("RGBA"))
+    render = rgba.copy()
+    render.thumbnail((MAX_RENDER_SIDE, MAX_RENDER_SIDE), Image.Resampling.LANCZOS)
+    pixels = np.array(render)
     height, width = pixels.shape[:2]
-    output = pixels[..., :3].astype(np.float32)*.22
-    columns = 3
-    yy, xx = np.mgrid[:height, :width].astype(np.float32)
-    v = yy/max(1, height-1)
-    for column in range(columns):
-        phase = column*2.1
-        center = (column+.5)*width/columns+np.sin(v*7+phase)*width*.055
-        radius = width/columns*.48*(.80+.20*np.cos(v*8+phase))
-        x = (xx-center)/np.maximum(1., radius)
-        inside = np.abs(x) < 1
-        curved = np.arcsin(np.clip(x, -1, 1))/np.pi+.5
-        u = (curved+v*1.25+column*.23+.09*np.sin(v*18)) % 1
-        repeats = max(4 if feature == "face" else 7, len(patches))
-        source_v = (v*repeats+column*.71+.22*np.sin(curved*6.28+v*9)) % len(patches)
-        sampled = cv2.remap(atlas, (u*255).astype(np.float32),
-                            (source_v*tile_height).astype(np.float32), cv2.INTER_LINEAR,
-                            borderMode=cv2.BORDER_WRAP)
-        np.divide(sampled[..., :3]*255, sampled[..., 3:4], out=sampled[..., :3],
-                  where=sampled[..., 3:4]>0)
-        roundness = np.sqrt(np.maximum(0, 1-x*x))
-        light = .25+.75*roundness
-        shine = .18*np.exp(-((x+.35)/.16)**2)
-        color = sampled[..., :3]*light[..., None]+shine[..., None]*np.array([100, 155, 190])
-        blend = np.clip((1-np.abs(x))/.035, 0, 1)*inside*(sampled[..., 3]/255)
-        output = output*(1-blend[..., None])+color*blend[..., None]
     result = pixels.copy()
-    result[..., :3] = np.clip(np.rint(output), 0, 255).astype(np.uint8)
-    return Image.fromarray(result)
+    columns = 3
+    # Broadcast coordinates and render narrow stripes: no full-image float maps.
+    xx = np.arange(width, dtype=np.float32)[None, :]
+    highlight = np.array([100, 155, 190], dtype=np.float32)
+    for row in range(0, height, STRIPE_ROWS):
+        end = min(height, row+STRIPE_ROWS)
+        v = np.arange(row, end, dtype=np.float32)[:, None]/max(1, height-1)
+        output = pixels[row:end, :, :3].astype(np.float32)*.22
+        for column in range(columns):
+            phase = column*2.1
+            center = (column+.5)*width/columns+np.sin(v*7+phase)*width*.055
+            radius = width/columns*.48*(.80+.20*np.cos(v*8+phase))
+            x = (xx-center)/np.maximum(1., radius)
+            inside = np.abs(x) < 1
+            curved = np.arcsin(np.clip(x, -1, 1))/np.pi+.5
+            u = (curved+v*1.25+column*.23+.09*np.sin(v*18)) % 1
+            repeats = max(4 if feature == "face" else 7, len(patches))
+            source_v = (v*repeats+column*.71+.22*np.sin(curved*6.28+v*9)) % len(patches)
+            sampled = cv2.remap(atlas, (u*255).astype(np.float32),
+                                (source_v*tile_height).astype(np.float32), cv2.INTER_LINEAR,
+                                borderMode=cv2.BORDER_WRAP)
+            np.divide(sampled[..., :3]*255, sampled[..., 3:4], out=sampled[..., :3],
+                      where=sampled[..., 3:4]>0)
+            roundness = np.sqrt(np.maximum(0, 1-x*x))
+            light = .25+.75*roundness
+            shine = .18*np.exp(-((x+.35)/.16)**2)
+            color = sampled[..., :3]*light[..., None]+shine[..., None]*highlight
+            blend = np.clip((1-np.abs(x))/.035, 0, 1)*inside*(sampled[..., 3]/255)
+            output = output*(1-blend[..., None])+color*blend[..., None]
+        result[row:end, :, :3] = np.clip(np.rint(output), 0, 255).astype(np.uint8)
+    rendered = Image.fromarray(result)
+    if rendered.size != image.size:
+        rendered = rendered.resize(image.size, Image.Resampling.LANCZOS)
+        rendered.putalpha(rgba.getchannel("A"))
+    return rendered

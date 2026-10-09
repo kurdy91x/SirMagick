@@ -68,56 +68,58 @@ Upload an image to a channel and mention the bot:
 
 | Command | Effect |
 |---|---|
-| `blockface` | Shrinks the inner face and stretches the surrounding strip of skin |
-| `warpface` | Enlarges the head and shrinks facial features |
-| `chudthor` | Creates a bizarre, more angular facial distortion |
-| `deepfry` | Adds exaggerated colors, noise, JPEG artifacts, and random stickers |
-| `help` | Shows the command overview |
-| `fatmagic` | Widens the face and detected torso (approximate body shape) |
-| `tinyface` | Shrinks the eyes, nose, and mouth together |
+| `angry` | Adds an anime anger symbol |
 | `bigmouth` | Enlarges the mouth |
-| `googly` | Enlarges the eyes |
+| `blockface` | Shrinks the inner face and stretches the surrounding strip of skin |
+| `blush` | Adds textured cheek tint and small anime hatch marks |
+| `chudthor` | Creates a bizarre, more angular facial distortion |
+| `complexexp` | Warps the image using a complex exponential |
+| `complexsquare` | Folds image coordinates using a complex square |
+| `crt` | Curved retro monitor, scanlines, and color fringes (Retro) |
+| `dealwithit` | Pixel sunglasses and a blunt aligned to each detected face |
+| `deepfry` | Adds exaggerated colors, noise, JPEG artifacts, and random stickers |
+| `devilhorns` | Glossy curved horns aligned with each head |
+| `droste` | Repeats the image in a logarithmic spiral |
+| `emboss` | Lit metallic relief (Depth) |
+| `extrude` | Colored sidewalls and shadows along image contours (Depth) |
 | `eyeswap` | Replaces the nose and mouth with copies of an eye |
+| `eyevortex` | Twisting cylindrical streams covered in repeated eyes |
+| `fatmagic` | Widens the face and detected torso (approximate body shape) |
+| `fisheye` | Wide-angle lens bulge (Trippy) |
+| `glitch` | Digital tearing, shifted bands, and RGB errors (Retro) |
+| `googly` | Enlarges the eyes |
+| `halftone` | Comic print dots and reduced colors (Retro) |
+| `halo` | A glowing golden halo aligned with each head |
+| `help` | Shows the command overview |
+| `inversion` | Inverts the center and outer image through complex coordinates |
+| `julia` | Image-colored Julia fractal patterns (Fractal) |
+| `kaleidoscope` | Mirrors the image into six sectors |
+| `letters` | Rebuilds the image from colored letters with varying sizes and density |
+| `logpolar` | Unwraps circles into straight bands |
+| `mouthvortex` | Twisting cylindrical streams covered in repeated mouths |
+| `newton` | Image-colored Newton fractal basins (Fractal) |
+| `nightvision` | Green low-light contrast, grain, and scanlines |
+| `numbers` | Rebuilds the image from colored digits with varying sizes and density |
+| `random` | Selects a random available effect and names it in the result |
+| `rgbghost` | Shifts color channels apart |
+| `rift` | Twisted mirrored shards, neon seams, and a dark dimensional tear |
+| `sparkle` | Adds anime sparkle stars |
+| `sweat` | Adds an anime sweat drop |
+| `swirl` | Twists the image into a spiral |
+| `thanos` | Directional disintegration into drifting image-colored dust |
+| `thermal` | Simulated heat-camera colors from brightness |
+| `tinyface` | Shrinks the eyes, nose, and mouth together |
+| `tron` | Sparse landmark-aligned facial light segments and simplified cyan contours |
+| `tunnel` | Creates a rotating tunnel of nested image copies |
+| `uwu` | Enlarges eyes slightly, shrinks the mouth, and adds soft blush |
+| `vortexcolumns` | Twisting cylindrical streams covered in repeated faces |
+| `warpface` | Enlarges the head and shrinks facial features |
 | `wide` | Stretches the entire image to three times its width |
 | `zoom` | Adds zoom ghost exposures |
-| `tunnel` | Creates a rotating tunnel of nested image copies |
-| `kaleidoscope` | Mirrors the image into six sectors |
-| `swirl` | Twists the image into a spiral |
-| `rgbghost` | Shifts color channels apart |
-| `droste` | Repeats the image in a logarithmic spiral |
-| `complexsquare` | Folds image coordinates using a complex square |
-| `complexexp` | Warps the image using a complex exponential |
-| `logpolar` | Unwraps circles into straight bands |
-| `inversion` | Inverts the center and outer image through complex coordinates |
-| `sweat` | Adds an anime sweat drop |
-| `uwu` | Enlarges eyes slightly, shrinks the mouth, and adds soft blush |
-| `blush` | Adds textured cheek tint and small anime hatch marks |
-| `sparkle` | Adds anime sparkle stars |
-| `angry` | Adds an anime anger symbol |
-| `random` | Selects a random available effect and names it in the result |
-| `julia` | Image-colored Julia fractal patterns (Fractal) |
-| `newton` | Image-colored Newton fractal basins (Fractal) |
-| `extrude` | Colored sidewalls and shadows along image contours (Depth) |
-| `emboss` | Lit metallic relief (Depth) |
-| `halo` | A glowing golden halo aligned with each head |
-| `devilhorns` | Glossy curved horns aligned with each head |
-| `vortexcolumns` | Twisting cylindrical streams covered in repeated faces |
-| `eyevortex` | Twisting cylindrical streams covered in repeated eyes |
-| `mouthvortex` | Twisting cylindrical streams covered in repeated mouths |
-| `numbers` | Rebuilds the image from colored digits with varying sizes and density |
-| `letters` | Rebuilds the image from colored letters with varying sizes and density |
-| `thermal` | Simulated heat-camera colors from brightness |
-| `tron` | Sparse landmark-aligned facial light segments and simplified cyan contours |
-| `rift` | Twisted mirrored shards, neon seams, and a dark dimensional tear |
-| `nightvision` | Green low-light contrast, grain, and scanlines |
-| `thanos` | Directional disintegration into drifting image-colored dust |
-| `dealwithit` | Pixel sunglasses and a blunt aligned to each detected face |
-| `glitch` | Digital tearing, shifted bands, and RGB errors (Retro) |
-| `crt` | Curved retro monitor, scanlines, and color fringes (Retro) |
-| `halftone` | Comic print dots and reduced colors (Retro) |
-| `fisheye` | Wide-angle lens bulge (Trippy) |
 
 Trippy and complex-coordinate effects do not require faces. `random` can select a face effect; if no face is detected, the job fails with the usual error message. Repeated `wide` applications increase the width again, up to the 24-million-pixel output limit. `uwu` adds cute facial proportions and blush; `blush` adds soft cheek tint and anime hatch marks.
+
+Vortex modes use a working canvas capped at 1600 pixels on its longest side and render in small strips to reduce temporary memory use. Results retain the original dimensions and alpha; large images may appear softer.
 
 Without a URL, the bot uses an image attached to your command or the latest image in the channel. Bot-generated images can be processed again. Face effects apply to all detected faces; if no face is detected, the job fails with an error message. GIFs are processed as a single image using their first frame.
 

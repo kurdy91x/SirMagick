@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch
 
 import numpy as np
 from PIL import Image
@@ -9,6 +10,23 @@ from test_chudthor import synthetic_face
 
 
 class FaceFantasyTests(unittest.TestCase):
+    def test_vortex_bounds_render_maps_and_restores_original_size_and_alpha(self):
+        import cv2
+        from sirmagick import vortexcolumns
+        pixels = np.random.default_rng(7).integers(0,256,(230,320,4),dtype=np.uint8)
+        image = Image.fromarray(pixels)
+        detection = Detection(320,230,320,230,[synthetic_face(160,100)],[],0)
+        with patch.object(vortexcolumns,'MAX_RENDER_SIDE',128), patch.object(vortexcolumns,'STRIPE_ROWS',24):
+            with patch.object(vortexcolumns.cv2,'remap',wraps=cv2.remap) as remap:
+                result = np.asarray(apply_effect(image,detection,'mouthvortex'))
+                self.assertGreater(remap.call_count,3)
+                for call in remap.call_args_list:
+                    self.assertLessEqual(call.args[1].shape[0],24)
+                    self.assertLessEqual(call.args[1].shape[1],128)
+        self.assertEqual(result.shape,pixels.shape)
+        np.testing.assert_array_equal(result[...,3],pixels[...,3])
+        np.testing.assert_array_equal(np.asarray(image),pixels)
+
     def test_both_heads_are_decorated_without_changing_alpha_or_source(self):
         pixels = np.full((180, 240, 4), (75, 110, 130, 175), np.uint8)
         image = Image.fromarray(pixels)

@@ -37,6 +37,8 @@ For slash commands, type `/sm_` and choose an effect, such as `/sm_halo` or `/sm
 | Neon | `tron` |
 | Dimensional | `rift` |
 
+The three Vortex modes render in 96-row strips on a working canvas capped at 1600 pixels on its longest side, then restore the original dimensions and alpha. This bounds their temporary rendering memory; large outputs may be softer than full-resolution rendering.
+
 `rift` shatters the image into twisted, mirrored fragments with cyan/magenta seams and a dark central tear. It needs no detection, runs on CPU, and preserves output dimensions and the original alpha mask. Preview four private comparisons with `python tools/preview_cinematic.py --modes rift`.
 
 `tron` combines sparse, smooth landmark-aligned facial light segments with simplified contours on hair and clothing. It runs on CPU and preserves output dimensions and alpha. The bot and CLI use the existing detector; images without faces still work with simplified image contours. Preview with `python tools/preview_cinematic.py --modes tron`; private comparisons stay in `examples/cinematic/`.
