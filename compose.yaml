@@ -1,0 +1,39 @@
+services:
+  sirmagick:
+    image: kurdy/sirmagick:latest
+    init: true
+    restart: unless-stopped
+    environment:
+      # Set through .env, the shell, or the deployment UI (e.g. Portainer).
+      DISCORD_TOKEN: "${DISCORD_TOKEN:?Bitte DISCORD_TOKEN setzen}"
+      ALLOWED_GUILD_IDS: "${ALLOWED_GUILD_IDS:-}"
+      ALLOWED_CHANNEL_IDS: "${ALLOWED_CHANNEL_IDS:-}"
+      QUEUE_SIZE: "${QUEUE_SIZE:-10}"
+      USER_COOLDOWN_SECONDS: "${USER_COOLDOWN_SECONDS:-5}"
+      HISTORY_LIMIT: "${HISTORY_LIMIT:-50}"
+      DOWNLOAD_TIMEOUT_SECONDS: "${DOWNLOAD_TIMEOUT_SECONDS:-20}"
+      PROCESS_TIMEOUT_SECONDS: "${PROCESS_TIMEOUT_SECONDS:-60}"
+      UPLOAD_TIMEOUT_SECONDS: "${UPLOAD_TIMEOUT_SECONDS:-30}"
+      MAX_DOWNLOAD_BYTES: "${MAX_DOWNLOAD_BYTES:-26214400}"
+      MAX_OUTPUT_BYTES: "${MAX_OUTPUT_BYTES:-8388608}"
+      DETECTION_MAX_SIDE: "${DETECTION_MAX_SIDE:-1024}"
+      MAX_PEOPLE: "${MAX_PEOPLE:-20}"
+      MODEL_DIR: /app/models
+      WORK_DIR: /tmp/sirmagick/jobs
+      MPLCONFIGDIR: /tmp/matplotlib
+    read_only: true
+    tmpfs:
+      - /tmp:rw,nosuid,nodev,size=512m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    cpus: "${DOCKER_CPUS:-2.0}"
+    mem_limit: ${DOCKER_MEMORY:-2g}
+    pids_limit: 256
+    stop_grace_period: 20s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
