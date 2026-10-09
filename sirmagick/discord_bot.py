@@ -81,6 +81,9 @@ class MagickBot(discord.Client):
         self.consumer = None
         self.downloads = None
         self.tree = discord.app_commands.CommandTree(self)
+        self.tree.on_error = self.slash_error
+        self.guild_sync_attempted = set()
+        self.guild_sync_lock = asyncio.Lock()
         self.register_commands()
 
     def allowed(self, guild, channel):
@@ -96,6 +99,8 @@ class MagickBot(discord.Client):
                                            url="Alternativ eine öffentliche Bild-URL")
             async def callback(interaction: discord.Interaction,
                                bild: discord.Attachment | None = None, url: str | None = None):
+                LOGGER.info("Slash-Aufruf: /%s | Server-ID %s | Kanal-ID %s", effect,
+                            interaction.guild_id, interaction.channel_id)
                 if not self.allowed(interaction.guild, interaction.channel):
                     await interaction.response.send_message("Hier ist der Bot nicht freigegeben.", ephemeral=True)
                     return
@@ -113,6 +118,8 @@ class MagickBot(discord.Client):
         @self.tree.command(name="help", description="Alle Bildeffekte und ihre Verwendung anzeigen")
         @discord.app_commands.guild_only()
         async def help_command(interaction: discord.Interaction):
+            LOGGER.info("Slash-Aufruf: /help | Server-ID %s | Kanal-ID %s",
+                        interaction.guild_id, interaction.channel_id)
             if not self.allowed(interaction.guild, interaction.channel):
                 await interaction.response.send_message("Hier ist der Bot nicht freigegeben.", ephemeral=True)
                 return
@@ -141,12 +148,50 @@ class MagickBot(discord.Client):
         except TimeoutError:
             LOGGER.warning("Slash-Registrierung: keine Antwort innerhalb von 30 Sekunden.")
 
+    async def sync_guild_commands(self, guild):
+        if self.config.guild_ids and guild.id not in self.config.guild_ids:
+            return
+        async with self.guild_sync_lock:
+            if guild.id in self.guild_sync_attempted:
+                return
+            self.guild_sync_attempted.add(guild.id)
+            self.tree.copy_global_to(guild=guild)
+            try:
+                async with asyncio.timeout(30):
+                    commands = await self.tree.sync(guild=guild)
+                LOGGER.info("Discord bestätigt %d Slash-Befehle direkt auf Server %s (%s).",
+                            len(commands), guild.name, guild.id)
+            except discord.HTTPException as exc:
+                LOGGER.warning("Server-Slash-Registrierung fehlgeschlagen auf %s: HTTP %s, Discord-Code %s. "
+                               "Server-Installation mit bot und applications.commands prüfen.",
+                               guild.id, exc.status, exc.code)
+            except TimeoutError:
+                LOGGER.warning("Server-Slash-Registrierung auf %s: Zeitlimit erreicht.", guild.id)
+
+    async def slash_error(self, interaction, error):
+        LOGGER.warning("Slash-Aufruf fehlgeschlagen: %s | Server-ID %s | Kanal-ID %s",
+                       type(error).__name__, interaction.guild_id, interaction.channel_id)
+        text = "Slash-Aufruf fehlgeschlagen. Bitte @sirmagick help verwenden und die Bot-Konsole prüfen."
+        try:
+            async with asyncio.timeout(self.config.upload_timeout):
+                if interaction.response.is_done():
+                    await interaction.followup.send(text, ephemeral=True)
+                else:
+                    await interaction.response.send_message(text, ephemeral=True)
+        except (discord.HTTPException, TimeoutError):
+            LOGGER.warning("Slash-Fehlermeldung konnte nicht gesendet werden.")
+
+    async def on_guild_join(self, guild):
+        await self.sync_guild_commands(guild)
+
     async def on_ready(self):
         LOGGER.info("Verbunden als %s (Bot-ID: %s), erreichbar auf %d Servern. "
                     "Hilfe im Kanal: @%s help", self.user, self.user.id, len(self.guilds), self.user.name)
         LOGGER.info("Serverfilter: %s | Kanalfilter: %s | Message-Content-Intent im Code: %s",
                     sorted(self.config.guild_ids) or "alle", sorted(self.config.channel_ids) or "alle",
                     self.intents.message_content)
+        for guild in self.guilds:
+            await self.sync_guild_commands(guild)
 
     async def close(self):
         if self.consumer:

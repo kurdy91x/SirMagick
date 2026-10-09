@@ -16,6 +16,39 @@ from test_core import fixture_directory
 
 
 class BotTests(unittest.IsolatedAsyncioTestCase):
+    async def test_guild_commands_sync_once_and_respect_server_filter(self):
+        from sirmagick.discord_bot import MagickBot
+        from sirmagick.effects import EFFECTS
+        bot = MagickBot(BotConfig(token="unused", guild_ids=frozenset({1})))
+        bot.tree.sync = AsyncMock(return_value=[SimpleNamespace(name="help")])
+        guild = SimpleNamespace(id=1, name="test")
+        try:
+            with self.assertLogs("sirmagick.discord_bot", level="INFO"):
+                await asyncio.gather(bot.sync_guild_commands(guild), bot.sync_guild_commands(guild))
+            bot.tree.sync.assert_awaited_once_with(guild=guild)
+            self.assertEqual({cmd.name for cmd in bot.tree.get_commands(guild=guild)}, EFFECTS | {"help"})
+            await bot.sync_guild_commands(SimpleNamespace(id=2, name="excluded"))
+            self.assertEqual(bot.tree.sync.await_count, 1)
+        finally:
+            await bot.close()
+
+    async def test_slash_errors_respond_before_and_after_defer(self):
+        from sirmagick.discord_bot import MagickBot
+        bot = MagickBot(BotConfig(token="unused"))
+        interaction = SimpleNamespace(guild_id=1, channel_id=2,
+            response=SimpleNamespace(is_done=lambda: False, send_message=AsyncMock()),
+            followup=SimpleNamespace(send=AsyncMock()))
+        try:
+            with self.assertLogs("sirmagick.discord_bot", level="WARNING"):
+                await bot.slash_error(interaction, ValueError("not logged"))
+            interaction.response.send_message.assert_awaited_once()
+            interaction.response.is_done = lambda: True
+            with self.assertLogs("sirmagick.discord_bot", level="WARNING"):
+                await bot.slash_error(interaction, ValueError("not logged"))
+            interaction.followup.send.assert_awaited_once()
+        finally:
+            await bot.close()
+
     async def test_command_sync_reports_discord_confirmation_and_errors(self):
         import discord
         from sirmagick.discord_bot import MagickBot
@@ -38,7 +71,7 @@ class BotTests(unittest.IsolatedAsyncioTestCase):
         bot = MagickBot(BotConfig(token="unused"))
         bot._connection.user = SimpleNamespace(id=42)
         interaction = SimpleNamespace(
-            id=123, user=SimpleNamespace(id=7, bot=False),
+            id=123, guild_id=1, channel_id=2, user=SimpleNamespace(id=7, bot=False),
             guild=SimpleNamespace(id=1), channel=SimpleNamespace(id=2, send=AsyncMock()),
             response=SimpleNamespace(defer=AsyncMock(), send_message=AsyncMock()),
             followup=SimpleNamespace(send=AsyncMock()))
@@ -67,7 +100,7 @@ class BotTests(unittest.IsolatedAsyncioTestCase):
     async def test_slash_help_and_invalid_inputs_do_not_queue(self):
         from sirmagick.discord_bot import MagickBot
         bot = MagickBot(BotConfig(token="unused", channel_ids=frozenset({2})))
-        interaction = SimpleNamespace(guild=SimpleNamespace(id=1), channel=SimpleNamespace(id=2),
+        interaction = SimpleNamespace(guild_id=1, channel_id=2, guild=SimpleNamespace(id=1), channel=SimpleNamespace(id=2),
             response=SimpleNamespace(send_message=AsyncMock(), defer=AsyncMock()))
         try:
             await bot.tree.get_command("help").callback(interaction)
