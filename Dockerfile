@@ -25,6 +25,7 @@ COPY licenses/Apache-2.0.txt ./licenses/Apache-2.0.txt
 COPY sirmagick/*.py ./sirmagick/
 COPY sirmagick/assets/shades.png sirmagick/assets/blunt.png ./sirmagick/assets/
 RUN python -m pip install . \
+    && python -c "import shutil; shutil.rmtree('/app/build', ignore_errors=True)" \
     && python -m sirmagick download-models --models /app/models \
     && python -c "import cv2, discord, mediapipe; from sirmagick.detection import Detector; detector = Detector(__import__('pathlib').Path('/app/models')); detector.close()"
 
