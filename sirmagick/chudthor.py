@@ -1,7 +1,7 @@
-"""Texturerhaltende Gesichtsverformung mit festen, wiederholbaren Proportionen.
+"""Texture-preserving face distortion with fixed, repeatable proportions.
 
-Inverse Abbildung verhindert Löcher: jedes Zielpixel liest einen Quellpunkt.
-Nur lokale Bildausschnitte werden verarbeitet; außerhalb bleibt das Bild identisch.
+Inverse mapping avoids holes: each destination pixel reads a source point.
+Only local image regions are processed; pixels outside remain identical.
 """
 
 import math
@@ -11,24 +11,24 @@ from PIL import Image
 
 from .data import Detection
 
-# MediaPipe-Gesichtskontur; Iris und herausragende Merkmale nicht für die Größe nutzen.
+# MediaPipe face contour; exclude irises and protruding features when measuring size.
 OVAL = (10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288,
         397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136,
         172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109)
 
 
 def radial_source(radius, boundary, outer):
-    """Zielkontur boundary auf Quellkontur 1 abbilden, außen glatt Identität.
+    """Map destination boundary to source radius 1, smoothly reaching identity outside.
 
-    Kubische Hermite-Interpolation verbindet Skalierung und unverändertes Umfeld
-    mit stetiger erster Ableitung. boundary darf ein Feld pro Richtung sein.
+    Cubic Hermite interpolation connects scaling to the unchanged surroundings
+    with a continuous first derivative. boundary may vary by direction.
     """
     span = outer - boundary
     secant = (outer - 1) / span
     slope_start = 1 / boundary
     slope_end = np.ones_like(boundary)
-    # Monotonie begrenzt die Tangenten: keine gefalteten Pixelringe bei
-    # starker Verkleinerung der inneren Gesichtszüge.
+    # Monotonicity limits tangents to prevent folded pixel rings when
+    # the inner facial features are heavily reduced.
     limiter = np.minimum(1, 3 / np.hypot(slope_start/secant, slope_end/secant))
     slope_start = slope_start * limiter
     slope_end = slope_end * limiter
@@ -44,7 +44,7 @@ def radial_source(radius, boundary, outer):
 
 
 def bilinear_rgba(pixels, x, y):
-    """Alpha vor Interpolation gewichten, damit transparente Ränder nicht abdunkeln."""
+    """Premultiply alpha before interpolation to avoid dark transparent edges."""
     height, width = pixels.shape[:2]
     x = np.clip(x, 0, width - 1)
     y = np.clip(y, 0, height - 1)
@@ -65,15 +65,15 @@ def bilinear_rgba(pixels, x, y):
 def apply_chudthor(image: Image.Image, detection: Detection) -> Image.Image:
     detection.require("face")
     if image.size != (detection.width, detection.height):
-        raise ValueError("Erkennungsdaten passen nicht zur Bildgröße.")
+        raise ValueError("Detection dimensions do not match the image.")
     pixels = np.array(image.convert("RGBA"))
     height, width = pixels.shape[:2]
-    # Große Gesichter zuerst, stabile Reihenfolge bei gleich großen Gesichtern.
+    # Process larger faces first; retain stable ordering for equally sized faces.
     faces = sorted(detection.faces,
                    key=lambda face: -abs(face[454].x-face[234].x))
     for face in faces:
         outline = np.array([(face[i].x, face[i].y) for i in OVAL])
-        # Augenlinie liefert die Drehung des Kopfes im Bild.
+        # The eye line provides the head rotation in image coordinates.
         left, right = face[33], face[263]
         angle = math.atan2(right.y-left.y, right.x-left.x)
         cosine, sine = math.cos(angle), math.sin(angle)
@@ -103,8 +103,8 @@ def apply_chudthor(image: Image.Image, detection: Detection) -> Image.Image:
         y0, y1 = max(0, math.floor(center[1]-extent_y)), min(height, math.ceil(center[1]+extent_y)+1)
         if x0 >= x1 or y0 >= y1:
             continue
-        # Pro Gesicht aus einem unveränderten Quellausschnitt lesen; zeilenweise
-        # Blöcke begrenzen den Speicher auch bei großen Eingabebildern.
+        # Read an unchanged source region for each face; process row blocks
+        # to bound memory usage even for large input images.
         source = pixels[y0:y1, x0:x1].copy()
         for row in range(y0, y1, 128):
             end = min(row+128, y1)
@@ -115,14 +115,14 @@ def apply_chudthor(image: Image.Image, detection: Detection) -> Image.Image:
             uy = (-dx*sine+dy*cosine)/ry
             radius = np.hypot(ux, uy)
             safe = np.maximum(radius, 1e-6)
-            # Superellipse mit weichen Ecken: größer und leicht viereckig.
+            # A superellipse with soft corners: larger and slightly square.
             direction = np.maximum(np.abs(ux/safe)**3 + np.abs(uy/safe)**3, 1e-6)**(-1/3)
             direction = np.where(radius > 1e-6, direction, 1.0)
             boundary = 1.38*direction
             mapped = radial_source(radius, boundary, 2.3)
             factor = np.where(radius > 1e-6, mapped/safe, 1/1.38)
             sx, sy = ux*factor, uy*factor
-            # Merkmale einzeln verkleinern; die Haut dazwischen bleibt erhalten.
+            # Shrink features individually, retaining the skin between them.
             for feature_x, feature_y, feature_rx, feature_ry in features:
                 target_x, target_y = feature_x*0.90, 0.14+(feature_y-0.14)*0.90
                 fx, fy = (sx-target_x)/feature_rx, (sy-target_y)/feature_ry

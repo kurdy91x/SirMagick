@@ -56,6 +56,8 @@ No published ports or additional volumes are needed. The container runs as a non
 
 ## Usage
 
+All slash commands use the `sm_` prefix. Type `/sm_` in Discord, then choose an effect such as `/sm_tron`, `/sm_rift`, or `/sm_blockface`; help is `/sm_help`. The table below lists short effect names: add `sm_` for slash commands. Mention commands keep the short names.
+
 Upload an image to a channel and mention the bot:
 
 ```text
@@ -88,15 +90,38 @@ Upload an image to a channel and mention the bot:
 | `logpolar` | Unwraps circles into straight bands |
 | `inversion` | Inverts the center and outer image through complex coordinates |
 | `sweat` | Adds an anime sweat drop |
+| `uwu` | Enlarges eyes slightly, shrinks the mouth, and adds soft blush |
+| `blush` | Adds textured cheek tint and small anime hatch marks |
 | `sparkle` | Adds anime sparkle stars |
 | `angry` | Adds an anime anger symbol |
 | `random` | Selects a random available effect and names it in the result |
+| `julia` | Image-colored Julia fractal patterns (Fractal) |
+| `newton` | Image-colored Newton fractal basins (Fractal) |
+| `extrude` | Colored sidewalls and shadows along image contours (Depth) |
+| `emboss` | Lit metallic relief (Depth) |
+| `halo` | A glowing golden halo aligned with each head |
+| `devilhorns` | Glossy curved horns aligned with each head |
+| `vortexcolumns` | Twisting cylindrical streams covered in repeated faces |
+| `eyevortex` | Twisting cylindrical streams covered in repeated eyes |
+| `mouthvortex` | Twisting cylindrical streams covered in repeated mouths |
+| `numbers` | Rebuilds the image from colored digits with varying sizes and density |
+| `letters` | Rebuilds the image from colored letters with varying sizes and density |
+| `thermal` | Simulated heat-camera colors from brightness |
+| `tron` | Sparse landmark-aligned facial light segments and simplified cyan contours |
+| `rift` | Twisted mirrored shards, neon seams, and a dark dimensional tear |
+| `nightvision` | Green low-light contrast, grain, and scanlines |
+| `thanos` | Directional disintegration into drifting image-colored dust |
+| `dealwithit` | Pixel sunglasses and a blunt aligned to each detected face |
+| `glitch` | Digital tearing, shifted bands, and RGB errors (Retro) |
+| `crt` | Curved retro monitor, scanlines, and color fringes (Retro) |
+| `halftone` | Comic print dots and reduced colors (Retro) |
+| `fisheye` | Wide-angle lens bulge (Trippy) |
 
-Trippy and complex-coordinate effects do not require faces. `random` can select a face effect; if no face is detected, the job fails with the usual error message. Repeated `wide` applications increase the width again, up to the 24-million-pixel output limit. `uwu` and `blush` are still being refined and are not enabled as bot commands.
+Trippy and complex-coordinate effects do not require faces. `random` can select a face effect; if no face is detected, the job fails with the usual error message. Repeated `wide` applications increase the width again, up to the 24-million-pixel output limit. `uwu` adds cute facial proportions and blush; `blush` adds soft cheek tint and anime hatch marks.
 
 Without a URL, the bot uses an image attached to your command or the latest image in the channel. Bot-generated images can be processed again. Face effects apply to all detected faces; if no face is detected, the job fails with an error message. GIFs are processed as a single image using their first frame.
 
-Slash commands are registered at startup. If they do not appear in Discord, use mention commands instead. Bot replies and help text are currently in German.
+Slash commands are registered at startup. If they do not appear in Discord, use mention commands instead. Bot replies, help text, and command descriptions are in English.
 
 ## Optional settings
 
@@ -123,3 +148,9 @@ docker compose up -d
 ```
 
 Source code and detailed setup instructions: [GitLab - SirMagick](https://gitlab.kurdy.de/kurdy/sirmagick).
+
+SirMagick's own code is MIT licensed. The image includes `/app/LICENSE`,
+`/app/THIRD_PARTY_NOTICES.md`, and `/app/licenses/Apache-2.0.txt`.
+Dependencies, models, and operating system packages retain their own licenses.
+
+All Discord slash commands use the `sm_` prefix: `/sm_blockface`, `/sm_halo`, `/sm_random`, `/sm_help`, and every other effect. Type `/sm_` to filter the command list. The tables list effect names; add `sm_` for slash commands. Mention commands retain short names, such as `@sirmagick halo`. After rebuilding and restarting, synchronization replaces the old unprefixed slash commands globally and in allowed guilds.

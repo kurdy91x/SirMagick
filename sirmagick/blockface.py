@@ -1,4 +1,4 @@
-"""Gesichtsfläche einheitlich verkleinern, nur den äußeren Hautstreifen ziehen."""
+"""Uniformly shrink the inner face, stretching only the outer skin strip."""
 
 import math
 import numpy as np
@@ -29,7 +29,7 @@ def _face_geometry(face):
 
 
 def _source_radius(radius):
-    """Innen exakt einheitlich skalieren, im Hautstreifen stetig anschließen."""
+    """Scale uniformly inside and connect continuously through the skin strip."""
     target_inner = INNER_RADIUS*FACE_SCALE
     outer = INNER_RADIUS+(radius-target_inner)*(1-INNER_RADIUS)/(1-target_inner)
     return np.where(radius <= target_inner, radius/FACE_SCALE,
@@ -43,13 +43,13 @@ def _face_map(face, width, height):
     x0, y0 = low
     x1, y1 = high
     if x0 >= x1 or y0 >= y1:
-        raise ValueError("Gesicht liegt außerhalb des Bildes.")
+        raise ValueError("Face lies outside the image.")
     xx, yy = np.meshgrid(np.arange(x0, x1, dtype=np.float32),
                          np.arange(y0, y1, dtype=np.float32))
     dx, dy = xx-center[0], yy-center[1]
     ux = (dx*basis[0, 0]+dy*basis[1, 0])/radii[0]
     uy = (dx*basis[0, 1]+dy*basis[1, 1])/radii[1]
-    # Tatsächliche Landmark-Kontur statt einer Ellipse über Haaren/Hintergrund.
+    # Use the actual landmark contour instead of an ellipse over hair or background.
     contour_radius = np.interp(np.arctan2(uy, ux), angles, distances, period=2*np.pi)
     radius = np.hypot(ux, uy)/np.maximum(contour_radius, 1e-6)
     source_radius = _source_radius(radius)
@@ -63,7 +63,7 @@ def _face_map(face, width, height):
 def apply_blockface(image: Image.Image, detection: Detection) -> Image.Image:
     detection.require("face")
     if image.size != (detection.width, detection.height):
-        raise ValueError("Erkennungsdaten passen nicht zur Bildgröße.")
+        raise ValueError("Detection dimensions do not match the image.")
     original = np.array(image.convert("RGBA"))
     result = original.copy()
     width, height = image.size

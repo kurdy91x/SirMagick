@@ -1,4 +1,4 @@
-"""Vorher/nachher-Beispiele aus einem erfolgreichen chudthor-Batch exportieren."""
+"""Export before/after examples from a successful effect batch."""
 
 import json
 import argparse
@@ -13,13 +13,13 @@ from .images import load_image
 def export_examples(source=Path("images"), results=None,
                     destination=None, effect="chudthor"):
     if effect not in {"chudthor", "warpface", "blockface", "deepfry"}:
-        raise ValueError("Unbekannter Beispieleffekt.")
+        raise ValueError("Unknown example effect.")
     results = Path(results) if results is not None else Path(f"output-{effect}")
     destination = Path(destination) if destination is not None else Path("examples")/effect
     report = json.loads((results / "report.json").read_text(encoding="utf-8"))
     successful = [entry for entry in report["files"] if entry["status"] == "ok"]
     if not successful:
-        raise ValueError("Keine erfolgreichen Beispiele zum Exportieren.")
+        raise ValueError("No successful examples to export.")
     destination.mkdir(parents=True, exist_ok=True)
     sheet = Image.new("RGB", (1200, ((len(successful)+1)//2)*350), "#202020")
     draw = ImageDraw.Draw(sheet)
@@ -38,13 +38,13 @@ def export_examples(source=Path("images"), results=None,
             sheet.paste(thumb, (x+offset+(290-thumb.width)//2, y+25+(300-thumb.height)//2))
             draw.text((x+offset+5, y+5), label, fill="white")
         draw.text((x+5, y+330), relative.as_posix()[:75], fill="white")
-    sheet.save(destination / "vergleich.jpg", quality=92)
+    sheet.save(destination / "comparison.jpg", quality=92)
     shutil.copyfile(results / "report.json", destination / "report.json")
-    print(f"{len(successful)} Beispiele: {destination / 'vergleich.jpg'}")
+    print(f"{len(successful)} examples: {destination / 'comparison.jpg'}")
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Vorher/nachher-Beispiele exportieren")
+    parser = argparse.ArgumentParser(description="Export before/after examples")
     parser.add_argument("--effect", choices=("chudthor", "warpface", "blockface", "deepfry"), default="chudthor")
     args = parser.parse_args()
     export_examples(effect=args.effect)

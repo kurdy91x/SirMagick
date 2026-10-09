@@ -30,7 +30,7 @@ class BotConfig:
                     raise ValueError()
                 return value
             except ValueError:
-                raise ValueError(f"Ungültiger Wert für {name}.") from None
+                raise ValueError(f"Invalid value for {name}.") from None
 
         def ids(name):
             try:
@@ -39,11 +39,11 @@ class BotConfig:
                     raise ValueError()
                 return values
             except ValueError:
-                raise ValueError(f"{name} muss eine Liste positiver IDs sein.") from None
+                raise ValueError(f"{name} must be a list of positive IDs.") from None
 
         token = os.getenv("DISCORD_TOKEN", "").strip()
         if not token:
-            raise ValueError("DISCORD_TOKEN fehlt. Token in .env oder als Umgebungsvariable setzen.")
+            raise ValueError("DISCORD_TOKEN is missing. Set it in .env or as an environment variable.")
         return cls(token=token, models=Path(os.getenv("MODEL_DIR", "models")).resolve(),
                    work=Path(os.getenv("WORK_DIR", ".cache/jobs")).resolve(),
                    queue_size=number("QUEUE_SIZE", 10, 1, 100),

@@ -80,10 +80,10 @@ def main():
                 repeat_report[mode] = {"status": "error", "error": str(exc), "effect": chosen}
             paired = comparison(image, edited, repeated,
                                 mode if mode != "random" else f"random -> {chosen}", error)
-            paired.save(output / (mode + "-vergleich.jpg"), quality=92)
+            paired.save(output / (mode + "-comparison.jpg"), quality=92)
             overview.paste(paired, (0, 700*index))
             print("Saved:", mode, flush=True)
-        overview.save(output / "alle-modi-vergleich.jpg", quality=92)
+        overview.save(output / "all-modes-comparison.jpg", quality=92)
         (output / "report.json").write_text(json.dumps({"source": path.name, "modes": modes,
             "random_choice": random_choice,
             "second_pass": repeat_report,

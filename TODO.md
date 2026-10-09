@@ -1,108 +1,53 @@
-# Sir Magick – To-do-Liste
+# SirMagick project status
 
-Ziel: Ein Discord-Bot im Docker-Container, der Bilder aus dem Chat oder einer URL bearbeitet und zurückpostet.
+The initial functional version is complete. New work is driven by concrete bugs or feature requests.
 
-## Aktueller Stand der neuen Modi
+## Completed
 
-- [x] Gesichtseffekte `fatmagic`, `tinyface`, `bigmouth`, `googly`, `eyeswap` und Ultrawide `wide` in Bot, Worker und CLI integrieren.
-- [x] Trippy-Modi `zoom`, `tunnel`, `kaleidoscope`, `swirl`, `rgbghost` integrieren.
-- [x] Euler-Modi `droste`, `complexsquare`, `complexexp`, `logpolar`, `inversion` integrieren.
-- [x] Anime-Decals `sweat`, `sparkle`, `angry` und botseitigen `random`-Modus integrieren.
-- [x] Gemeinsamen Effektkatalog, Hilfe und READMEs aktualisieren; 37 automatisierte Tests und alle 24 aktiven Modi mit echtem CPU-Worker prüfen.
-- [x] Lokale dreispaltige Vergleiche unter ignoriertem `examples/` ablegen; Bildmaterial vom Docker-Build ausschließen.
-- [ ] Überarbeitete `uwu`-/`blush`-Optik abstimmen; bis dahin keine Bot-Befehle dafür registrieren.
-- [ ] Neue Modi im neu gebauten Container auf dem Server prüfen.
+- [x] Python 3.12 with CPU-only processing and reusable MediaPipe face/pose models.
+- [x] Prefix every slash command with sm_, including help/random and future catalog entries; replace legacy names during sync. Mention names stay short.
+- [x] Retro effects glitch, CRT, halftone; fisheye lens; mirrorface rejected and removed.
+- [x] Fractal category with julia and newton; private comparisons on four inputs.
+- [x] Depth effects extrude and emboss; anaglyph removed in favor of existing rgbghost.
+- [x] Head-aligned golden halos and glossy devil horns; face-textured vortex columns.
+- [x] Eye and mouth vortex variants using features from every detected face; sm_ slash prefix inherited automatically.
+- [x] Typography modes numbers and letters; bundled font, adaptive glyph sizes, and private comparisons on four inputs.
+- [x] Thermal, night vision, Thanos disintegration, and face-aligned shades/blunt with direction-aware mirroring.
+- [x] Landmark-aligned Tron lighting and dimensional Rift shards; Outrun rejected and removed.
+- [x] Process all detected faces; reject requests lacking required detections.
+- [x] Validate image formats, first-frame GIF handling, download and pixel limits.
+- [x] Fixed effect strengths; previous bot results can be processed again.
+- [x] Original effects: blockface, warpface, chudthor, deepfry.
+- [x] Face effects, ultrawide, Trippy, Euler, anime decals, and random mode.
+- [x] Rebuild uwu and blush using original facial texture, local scaling, and cheek tint.
+- [x] Share the effect catalog across CLI, bot, and worker.
+- [x] Mention and slash commands, image attachments, public URLs, channel history, and help.
+- [x] Bounded queue, cooldown, one pending job per user, and hard worker timeout.
+- [x] Continue after failed jobs; clean temporary files; validate DNS and redirects.
+- [x] Global and guild slash registration, confirmed working by the maintainer.
+- [x] Docker build and running bot confirmed by the maintainer for an earlier version.
+- [x] Compose token parameter, non-root operation, resource limits, and log rotation.
+- [x] Exclude private images and tokens from Git and Docker; audit application build files.
+- [x] Keep private original / first pass / second pass comparisons under ignored examples/.
+- [x] MIT license for project code and third-party notices included in future image builds.
+- [x] English documentation, bot responses, command descriptions, CLI messages, and logs.
 
-## Festgelegte Grundlagen
+## Deferred or superseded
 
-- [x] Programmiersprache: Python (lokal verfügbar: Python 3.12.10).
-- [x] Serverbetrieb ohne GPU: Erkennung und Verarbeitung laufen auf der CPU.
-- [x] GIFs als statische Bilder behandeln; Animationen ignorieren und den ersten Frame verwenden.
-- [x] Bei mehreren Personen alle erkannten Personen bearbeiten.
-- [x] Bei fehlender geeigneter Erkennung für `chudthor` oder `fatmagic` eine Fehlermeldung senden und den Auftrag abbrechen.
-- [x] Feste Effektstärke verwenden; keine Stärke als Befehlsparameter anbieten.
-- [x] Ergebnisse erneut als Eingabe zulassen: Nutzer können ein verarbeitetes Bild mit einem weiteren Befehl nochmals bearbeiten lassen.
-- [ ] Erkennungsmodelle einmal beim Start laden und für weitere Bilder wiederverwenden.
-- [ ] Erkennung auf verkleinerten Bildern prüfen und Koordinaten auf die Originalgröße übertragen.
-- [ ] Zunächst einen Bildauftrag gleichzeitig verarbeiten; weitere Aufträge warten in einer begrenzten Warteschlange.
+- Old blockface mesh/collage variants: replaced by the accepted inner-face scaling effect.
+- Minecraft-style body transformation: not implemented; fatmagic widens the face and upper body.
+- More precise person masks and improved crowded-group detection: possible future work.
+- Strongly distorted faces may no longer be detected on a later request; failure remains valid behavior.
+- Persistent queue and automatic hang watchdog: optional future features.
 
-## 1. Erkennung lokal entwickeln
+## Verification limits
 
-Stand: Lokales Erkennungsmodul implementiert und auf 17 Beispielbildern ausgeführt. Sechs Tests sowie ein echter Fehler-/Fortsetzungslauf bestehen. Gruppenabdeckung und Personenmasken bleiben offen; siehe README.
+The maintainer confirmed Docker operation and working slash commands. A complete server-side run of all newer modes, load/memory tests, failure recovery, and restart checks is not fully documented. Docker Hub uploads and removal of older images containing private photos are handled by the maintainer and have not been independently confirmed here. The current development machine has no Docker installation.
 
-- [x] Erste Beispielbilder unter `images/face`, `images/halfbody` und `images/fullbody` sammeln.
-- [ ] Beispielbilder visuell prüfen und Abdeckung für mehrere Personen, seitliche Ansichten und Bilder ohne Personen ergänzen.
-- [x] GIFs wie statische Bilder behandeln: ersten Frame laden und Animationen ignorieren (getestet).
-- [x] `.url`-Dateien beim Einlesen überspringen.
-- [x] Gesichtserkennung mit Merkmalspunkten für Kontur, Augen, Nase und Mund ausprobieren.
-- [x] Körpererkennung mit Haltungspunkten ausprobieren.
-- [ ] Erkennung in Gruppen verbessern und prüfen, welche kleinen oder verdeckten Personen fehlen.
-- [ ] Für genaue Körperkonturen zusätzlich Personenmasken prüfen; Haltungspunkte allein liefern keine Kontur.
-- [x] Erkannte Gesichts- und Körperpunkte auf Kontrollbildern sichtbar machen.
-- [ ] Personenmasken auf Kontrollbildern sichtbar machen, sobald Maskenerkennung ergänzt ist.
-- [x] Verarbeitung aller erkannten Personen implementieren; bei fehlender geeigneter Erkennung Auftrag mit Fehlermeldung beenden (lokaler Batchlauf geprüft).
+These notes describe verification coverage, rather than pending implementation requests. New uwu/blush comparisons are available locally for visual review.
 
-## 2. Transformationslogik entwickeln
+Latest local checks: 58 automated tests passed, including prefixed slash registration, shared queue behavior, and the newer effect families. Live Discord confirmation of the latest prefixed commands still requires rebuilding and restarting the deployed bot.
 
-- [ ] Pipeline aufbauen: Bild laden → erkennen → Transformation berechnen → verformen → speichern.
-- [ ] Erkennung und Effekte getrennt implementieren, damit Effekte dieselben Erkennungsdaten verwenden können.
-- [x] Ersten lokalen `chudthor`-Entwurf implementieren: Gesicht vergrößern, leicht viereckig formen und Augen, Mund sowie Nase verkleinern und zur Mitte rücken.
-- [x] 14 Beispielergebnisse und Vorher-nachher-Übersicht unter `examples/chudthor/` ablegen.
-- [x] Optik von `chudthor` anhand der Beispiele mit dem Nutzer abstimmen: genau so beibehalten.
-- [ ] Wiederholte Anwendung robuster machen: stark verformte Ergebnisse werden teilweise nicht mehr als Gesicht erkannt.
-- [x] Separaten `warpface`-Prototyp entwickeln: Kopfmaske, Kopf als Ganzes vergrößern, äußere Kontur leicht kantiger formen und einzelne Merkmale lokal um ihre eigene Mitte verkleinern.
-- [x] Bei der lokalen Merkmalsverkleinerung die umgebenden Originalpixel in die Übergangsfläche ziehen, statt freie Stellen mit Hautpatches zu füllen.
-- [ ] Neue `warpface`-Beispiele mit dem Nutzer abstimmen; Kopfmasken und Übergänge bei schwierigen Bildern prüfen.
-- [x] 14 aktuelle `warpface`-Beispiele unter `examples/warpface/` exportieren und einen zweiten Durchlauf auf einem bereits bearbeiteten Porträt erfolgreich prüfen.
-- [x] Bisherigen Effekt samt Befehl und Beispielen in `warpface` umbenennen.
-- [x] Neuen, separaten `blockface`-Entwurf anhand von `example.jpg` entwickeln: rechteckigerer Kopf, proportional kleine Merkmale, Verteilung der Gesichtsfläche über ein Dreiecksnetz.
-- [x] 14 neue `blockface`-Beispiele exportieren und geometrische Tests ergänzen; insgesamt 18 Tests bestehen.
-- [x] Frühere `blockface`-Netzvariante beurteilen und durch den einfacheren Ansatz mit äußerem Hautstreifen ersetzen.
-- [x] `blockface` erneut vereinfachen: keine Kopfvergrößerung oder Collage; innere Gesichtsfläche einheitlich auf 84 Prozent skalieren, nur den äußeren Hautstreifen bis zur unveränderten Kontur strecken.
-- [x] Frühere Netz-Beispiele als `examples/blockface-mesh/` aufbewahren; 14 aktuelle Beispiele und 17 bestehende Tests prüfen.
-- [x] Aktuelle `blockface`-Variante mit dem Nutzer abstimmen: freigegeben, vorerst genau so beibehalten; rechteckige Kontur zurückstellen.
-- [ ] Übergänge zum Hintergrund und Lücken durch die Verformung behandeln.
-- [ ] `fatmagic`: Gesicht und Körper leicht verzerren und kantig wie Minecraft formen.
-- [ ] Effektstärken anhand der Beispielbilder abstimmen.
-- [x] `deepfry`: Kontrast, Sättigung, Schärfung, Rauschen und Kompressionsartefakte kombinieren; benötigt keine Erkennung.
-- [x] Pro Deepfry-Auftrag zufällig ein bis zwei gezeichnete Smilies oder Schriftzüge (`100%!!`, `xD`) einfügen und mitkomprimieren.
-- [x] Deepfry auf allen 17 Bildern ausführen, Beispiele ablegen, Alpha und Wiederholung prüfen; insgesamt 21 Tests bestehen.
-- [ ] Laufzeit und Speicherbedarf auf der Server-CPU messen und Bildgrößen sowie Modelle entsprechend abstimmen.
+Private comparisons remain outside Git and Docker under examples/: anime/multi/, retro-new/, fractal/, depth/, headgear/, and vortexcolumns/. Each comparison shows original / first pass / second pass. Missing face detections on later passes are reported rather than bypassed. Mirrorface, Orbitlines, and Anaglyph were rejected or redundant and removed from the active catalog and previews.
 
-## 3. Discord anbinden
-
-- [ ] Bot anlegen, auf einen Testserver einladen und Rechte sowie Zugriff auf Nachrichteninhalte konfigurieren.
-- [x] Token sicher über eine Umgebungsvariable laden und aus dem Repository heraushalten.
-- [x] `@sirmagick [command]`: letztes geeignetes Bild im Kanal verwenden; Suchgrenze und Auswahlregel festlegen.
-- [x] `@sirmagick [command] [imageurl]`: Bild von der angegebenen URL verwenden.
-- [x] Downloads mit Größenlimit und Zeitlimit absichern; interne Netzwerkziele auch bei Weiterleitungen sperren.
-- [x] Bildformat anhand des Inhalts und Bildabmessungen prüfen.
-- [x] Verarbeitungsstatus anzeigen und Ergebnis als Datei im selben Kanal posten.
-- [x] Hilfe und verständliche Fehlermeldungen ergänzen; eigene Bot-Nachrichten ignorieren.
-- [x] Eigene Nachrichten lösen keine Aufträge aus, ihre Bildanhänge dürfen jedoch als Eingabe für einen neuen Nutzerauftrag dienen.
-- [x] Gleichzeitige Aufträge begrenzen, begrenzte Warteschlange und Nutzer-Cooldown ergänzen.
-- [x] Warteschlangen-Worker nach Fehlern zuverlässig freigeben und den nächsten Auftrag starten; Verarbeitungszeit begrenzen.
-- [x] Temporäre Bilder nach Erfolg oder Fehler entfernen.
-
-
-Implementierung offline geprüft (28 Tests). Live-Test mit Discord-Token und Serverrechten steht noch aus; Anleitung: `DISCORD.md`.
-
-## 4. Docker und Betrieb
-
-- [ ] Dockerfile inklusive Erkennungsmodellen und Bibliotheken erstellen.
-- [ ] Container ohne Root-Rechte betreiben.
-- [ ] Compose-Datei mit Konfiguration, Neustartregel und Ressourcenlimits erstellen.
-- [ ] `.env.example`, `.gitignore` und `.dockerignore` ergänzen.
-- [ ] Fehler und Laufzeiten protokollieren, ohne Token oder Bildinhalte zu loggen.
-- [ ] Installation, Befehle und Updates dokumentieren.
-- [ ] Auf dem Docker-Server Bilder, Fehlerfälle, parallele Anfragen und Neustarts prüfen.
-
-## Meilensteine
-
-1. Gesichtsmerkmale und Körperbereiche auf einem lokalen Kontrollbild markieren.
-2. `chudthor` lokal mit reproduzierbarer Transformationslogik umsetzen.
-3. `fatmagic` ergänzen; `deepfry` kann unabhängig davon entstehen.
-4. Funktionierende Bildverarbeitung an Discord anbinden.
-5. Docker-Betrieb und Belastungsprüfung abschließen.
-
-Ursprüngliche Ideen: `functionality.txt`.
+Historical ideas: functionality.txt. Current usage and effect list: README.md.

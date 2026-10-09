@@ -1,4 +1,4 @@
-"""Bibliotheksunabhängige Ergebnisse in Originalbild-Koordinaten."""
+"""Library-independent results in original image coordinates."""
 
 from dataclasses import dataclass
 
@@ -31,15 +31,15 @@ class Detection:
 
     def require(self, kind: str) -> None:
         if kind not in {"face", "body", "any"}:
-            raise ValueError(f"Unbekannte Erkennungsart: {kind}")
+            raise ValueError(f"Unknown detection type: {kind}")
         found = {"face": bool(self.faces), "body": bool(self.poses),
                  "any": bool(self.faces or self.poses)}[kind]
         if not found:
-            raise NoDetectionError(f"Keine geeignete Erkennung ({kind}); Auftrag abgebrochen.")
+            raise NoDetectionError(f"No suitable detection ({kind}); job aborted.")
 
 
 def original_points(landmarks, width: int, height: int) -> list[Point]:
-    # Normalisierte Koordinaten beziehen sich auch nach Skalierung auf das ganze Bild.
+    # Normalized coordinates refer to the entire image even after resizing.
     return [Point(float(p.x) * width, float(p.y) * height,
                   float(getattr(p, "visibility", None) or 0.0),
                   float(getattr(p, "presence", None) or 0.0)) for p in landmarks]

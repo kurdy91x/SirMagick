@@ -5,7 +5,7 @@ services:
     restart: unless-stopped
     environment:
       # Set through .env, the shell, or the deployment UI (e.g. Portainer).
-      DISCORD_TOKEN: "${DISCORD_TOKEN:?Bitte DISCORD_TOKEN setzen}"
+      DISCORD_TOKEN: "${DISCORD_TOKEN:?Please set DISCORD_TOKEN}"
       ALLOWED_GUILD_IDS: "${ALLOWED_GUILD_IDS:-}"
       ALLOWED_CHANNEL_IDS: "${ALLOWED_CHANNEL_IDS:-}"
       QUEUE_SIZE: "${QUEUE_SIZE:-10}"

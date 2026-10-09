@@ -3,59 +3,118 @@ from importlib import import_module
 import secrets
 
 DESCRIPTIONS = {
-    "chudthor": "Skurrile, kantigere Gesichtsverformung",
-    "warpface": "Kopf vergrößern und Gesichtszüge verkleinern",
-    "blockface": "Gesicht verkleinern und äußeren Hautstreifen strecken",
-    "deepfry": "Farben, JPEG-Artefakte und zufällige Sticker",
-    "fatmagic": "Gesicht und erkannten Oberkörper verbreitern",
-    "tinyface": "Augen, Nase und Mund zusammen verkleinern",
-    "bigmouth": "Mund stark vergrößern",
-    "googly": "Augen stark vergrößern",
-    "wide": "Das gesamte Bild auf dreifache Breite ziehen",
-    "eyeswap": "Nase und Mund jeweils durch ein Auge ersetzen",
-    "zoom": "Zoom-Geisterbilder übereinanderlegen",
-    "tunnel": "Verschachtelten, gedrehten Bildtunnel erzeugen",
-    "kaleidoscope": "Bild sechsfach spiegeln",
-    "swirl": "Bild zu einem Spiralwirbel drehen",
-    "rgbghost": "Farbkanäle gegeneinander verschieben",
-    "droste": "Wiederholte Bildkopien in einer logarithmischen Spirale",
-    "complexsquare": "Bildkoordinaten quadrieren und Motive falten",
-    "complexexp": "Bild durch die komplexe Exponentialfunktion verformen",
-    "logpolar": "Kreise zu Streifen abwickeln",
-    "inversion": "Bildmitte und Außenbereich komplex invertieren",
-    "sweat": "Anime-Schweißtropfen hinzufügen",
-    "sparkle": "Anime-Glitzersterne hinzufügen",
-    "angry": "Anime-Wutsymbol hinzufügen",
-    "random": "Einen zufälligen Effekt auswählen",
+    "rift": "Shatter the image into twisted mirrored shards around a neon dimensional rift",
+    "tron": "Dark electric cyan contours with a bright neon glow",
+    "thermal": "Simulated thermal camera colors from image brightness",
+    "nightvision": "Green low-light vision with grain and scanlines",
+    "thanos": "Disintegrate the image into drifting dust particles",
+    "dealwithit": "Pixel sunglasses and a blunt aligned to every face",
+    "numbers": "Rebuild the image from colored digits of varying size and density",
+    "letters": "Rebuild the image from colored letters of varying size and density",
+    "vortexcolumns": "Twisting 3D columns covered in repeated detected faces",
+    "eyevortex": "Twisting 3D streams covered in repeated detected eyes",
+    "mouthvortex": "Twisting 3D streams covered in repeated detected mouths",
+    "halo": "A glowing golden halo aligned with each head",
+    "devilhorns": "Glossy curved devil horns aligned with each head",
+    "extrude": "Pull image contours into colored 3D sides and shadows",
+    "emboss": "Turn the image into a lit metallic relief",
+    "julia": "Julia fractal patterns colored with the original image",
+    "newton": "Newton fractal basins with image-colored branching patterns",
+    "glitch": "Digital tearing, displaced bands, and RGB errors",
+    "crt": "Retro monitor scanlines, curved screen, and color fringes",
+    "halftone": "Comic print dots with reduced colors",
+    "fisheye": "Bulge the image through a wide-angle lens",
+    "chudthor": "Surreal, angular face distortion",
+    "warpface": "Enlarge the head and shrink facial features",
+    "blockface": "Shrink the face and stretch the surrounding skin",
+    "deepfry": "Extreme colors, JPEG artifacts, and random stickers",
+    "fatmagic": "Widen the face and detected upper body",
+    "tinyface": "Shrink the eyes, nose, and mouth together",
+    "bigmouth": "Make the mouth much larger",
+    "googly": "Make the eyes much larger",
+    "wide": "Stretch the entire image to triple width",
+    "eyeswap": "Replace the nose and mouth with eyes",
+    "zoom": "Overlay zoomed ghost images",
+    "tunnel": "Create a nested, rotating image tunnel",
+    "kaleidoscope": "Mirror the image into six segments",
+    "swirl": "Twist the image into a spiral",
+    "rgbghost": "Offset the RGB color channels",
+    "droste": "Repeat image copies along a logarithmic spiral",
+    "complexsquare": "Square complex image coordinates and fold the scene",
+    "complexexp": "Transform the image with the complex exponential function",
+    "logpolar": "Unwrap circles into stripes",
+    "inversion": "Invert the image center and surroundings",
+    "sweat": "Add an anime sweat drop",
+    "sparkle": "Add anime sparkle stars",
+    "angry": "Add an anime anger symbol",
+    "uwu": "Cute facial proportions with soft anime blush",
+    "blush": "Soft cheek blush with anime hatch marks",
+    "random": "Choose a random effect",
 }
 
 FACE_MODES = frozenset({"fatmagic", "tinyface", "bigmouth", "googly", "eyeswap"})
-TRIPPY = frozenset({"zoom", "tunnel", "kaleidoscope", "swirl", "rgbghost"})
+TRIPPY = frozenset({"zoom", "tunnel", "kaleidoscope", "swirl", "rgbghost", "fisheye"})
+RETRO = frozenset({"glitch", "crt", "halftone"})
+FRACTAL = frozenset({"julia", "newton"})
+DEPTH = frozenset({"extrude", "emboss"})
+TYPOGRAPHY = frozenset({"numbers", "letters"})
 EULER = frozenset({"droste", "complexsquare", "complexexp", "logpolar", "inversion"})
-ANIME = frozenset({"sweat", "sparkle", "angry"})
-FACE_EFFECTS = FACE_MODES | ANIME | {"blockface", "warpface", "chudthor"}
+ANIME = frozenset({"uwu", "blush", "sweat", "sparkle", "angry"})
+VORTEX = frozenset({"vortexcolumns", "eyevortex", "mouthvortex"})
+FACE_EFFECTS = FACE_MODES | ANIME | VORTEX | {"blockface", "warpface", "chudthor", "halo", "devilhorns", "dealwithit"}
+DETECTION_EFFECTS = FACE_EFFECTS | {"tron"}
 EFFECTS = frozenset(DESCRIPTIONS)
 
 
 def resolve_effect(name):
     if name not in EFFECTS:
-        raise ValueError("Unbekannter Effekt. @sirmagick help zeigt alle Befehle.")
+        raise ValueError("Unknown effect. Use @sirmagick help to list commands.")
     return secrets.choice(sorted(EFFECTS-{"random"})) if name == "random" else name
 
 
 def apply_effect(image, detection, name):
     if name not in EFFECTS or name == "random":
-        raise ValueError("Effekt muss vor der Verarbeitung ausgewählt werden.")
+        raise ValueError("Select an effect before processing.")
     if name in FACE_EFFECTS:
         if detection is None:
-            raise ValueError("Gesichtserkennung fehlt.")
+            raise ValueError("Face detection is required.")
         detection.require("face")
         if image.size != (detection.width, detection.height):
-            raise ValueError("Erkennungsdaten passen nicht zur Bildgröße.")
+            raise ValueError("Detection dimensions do not match the image.")
     if name == "wide":
         from .images import MAX_PIXELS
         if image.width*image.height*3 > MAX_PIXELS:
-            raise ValueError("Ultrawide-Ergebnis würde 24 Millionen Pixel überschreiten.")
+            raise ValueError("The ultrawide result would exceed 24 million pixels.")
+    if name in {"tron"}:
+        from .neon import apply_effect as neon_effect
+        if detection is not None and image.size != (detection.width, detection.height):
+            raise ValueError("Detection dimensions do not match the image.")
+        return neon_effect(image, name, detection)
+    if name == "rift":
+        from .rift import apply_rift
+        return apply_rift(image)
+    if name in TYPOGRAPHY:
+        from .typography import apply_effect as typography_effect
+        return typography_effect(image, name)
+    if name in {"thermal", "nightvision", "thanos"}:
+        from .cinematic import apply_effect as cinematic_effect
+        return cinematic_effect(image, name)
+    if name in VORTEX:
+        from .vortexcolumns import apply_vortexcolumns
+        feature = {"vortexcolumns": "face", "eyevortex": "eye", "mouthvortex": "mouth"}[name]
+        return apply_vortexcolumns(image, detection, feature)
+    if name in {"halo", "devilhorns"}:
+        from .headgear import apply_effect as headgear_effect
+        return headgear_effect(image, detection, name)
+    if name in DEPTH:
+        from .depth import apply_effect as depth_effect
+        return depth_effect(image, name)
+    if name in FRACTAL:
+        from .fractal import apply_effect as fractal_effect
+        return fractal_effect(image, name)
+    if name in RETRO | {"fisheye"}:
+        from .retro import apply_effect as retro_effect
+        return retro_effect(image, name, detection)
     if name in FACE_MODES or name == "wide":
         from .face_modes import apply_mode
         return apply_mode(image, detection, name)

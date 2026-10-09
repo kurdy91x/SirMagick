@@ -25,11 +25,11 @@ def main():
         first.save(output / f"{mode}.png")
         second.save(output / f"{mode}-2x.png")
         paired = comparison(image, first, second, mode)
-        paired.save(output / f"{mode}-vergleich.jpg", quality=93)
+        paired.save(output / f"{mode}-comparison.jpg", quality=93)
         overview.paste(paired, (0, index*700))
         assert image.size == first.size == second.size
         print("Saved:", mode, flush=True)
-    overview.save(output / "alle-trippy-vergleich.jpg", quality=93)
+    overview.save(output / "all-trippy-comparison.jpg", quality=93)
     (output / "report.json").write_text(json.dumps({"source": str(source.relative_to(root)),
         "modes": MODES, "passes": 2, "requires_detection": False, "prototype": True}, indent=2))
 

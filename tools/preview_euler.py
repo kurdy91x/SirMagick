@@ -27,10 +27,10 @@ def main():
         first.save(output / f"{mode}.png")
         second.save(output / f"{mode}-2x.png")
         paired = comparison(image, first, second, mode)
-        paired.save(output / f"{mode}-vergleich.jpg", quality=93)
+        paired.save(output / f"{mode}-comparison.jpg", quality=93)
         overview.paste(paired, (0, index*700))
         print("Saved:", mode, flush=True)
-    overview.save(output / "alle-euler-vergleich.jpg", quality=93)
+    overview.save(output / "all-euler-comparison.jpg", quality=93)
     (output / "report.json").write_text(json.dumps({"source": str(source.relative_to(root)),
         "modes": MODES, "passes": 2, "prototype": True, "requires_detection": False,
         "boundary": "reflected", "singularities": "regularized"}, indent=2))

@@ -1,4 +1,4 @@
-# Python 3.12; CPU-Betrieb ohne GPU
+# Python 3.12; CPU-only processing, no GPU required
 mediapipe>=0.10.21,<0.11
 Pillow>=11,<13
 numpy>=1.26,<3

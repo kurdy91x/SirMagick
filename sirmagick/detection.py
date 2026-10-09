@@ -7,14 +7,14 @@ from .images import detection_image
 
 
 class Detector:
-    """Einmal pro Worker erstellen; sequenziell für viele Bilder verwenden."""
+    """Create once per worker and reuse sequentially for multiple images."""
 
     def __init__(self, model_dir: Path, max_side: int = 1024, max_people: int = 20):
         if max_side < 128 or max_people < 1:
-            raise ValueError("max_side muss >= 128 und max_people >= 1 sein.")
+            raise ValueError("max_side must be >= 128 and max_people must be >= 1.")
         for name in ("face_landmarker.task", "pose_landmarker_lite.task"):
             if not (model_dir / name).is_file():
-                raise FileNotFoundError(f"Modell fehlt: {model_dir / name}. Zuerst download-models ausführen.")
+                raise FileNotFoundError(f"Model missing: {model_dir / name}. Run download-models first.")
         import mediapipe as mp
         from mediapipe.tasks import python
         from mediapipe.tasks.python import vision

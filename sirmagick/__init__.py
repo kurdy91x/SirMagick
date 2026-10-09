@@ -1,1 +1,1 @@
-"""Sir Magick: lokale, CPU-basierte Bildverarbeitung."""
+"""Sir Magick: local CPU-based image processing."""

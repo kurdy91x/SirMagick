@@ -21,12 +21,12 @@ def parse_command(content: str, bot_id: int) -> Command | None:
         return Command("help")
     effect = parts[0].lower()
     if effect not in EFFECTS | {"help"}:
-        raise ValueError("Unbekannter Befehl. @sirmagick help zeigt alle Effekte.")
+        raise ValueError("Unknown command. Use @sirmagick help to list effects.")
     if len(parts) > 2 or (effect == "help" and len(parts) > 1):
-        raise ValueError("Syntax: @SirMagick effekt [bild-url]")
+        raise ValueError("Syntax: @SirMagick effect [image-url]")
     url = parts[1].strip("<>") if len(parts) == 2 else None
     if url and urlsplit(url).scheme.lower() not in {"http", "https"}:
-        raise ValueError("Bild-URLs müssen mit http:// oder https:// beginnen.")
+        raise ValueError("Image URLs must start with http:// or https://.")
     return Command(effect, url)
 
 
@@ -36,9 +36,9 @@ def image_url(message, max_bytes: int) -> str | None:
         suffix = urlsplit(attachment.filename).path.lower()
         if content_type.startswith("image/") or suffix.endswith((".jpg", ".jpeg", ".png", ".webp", ".gif")):
             if attachment.size > max_bytes:
-                raise ValueError("Das ausgewählte Bild ist zu groß (maximal 25 MiB oder konfiguriertes Limit).")
+                raise ValueError("The selected image exceeds the download limit (25 MiB maximum, or the configured limit).")
             return attachment.url
-    # Nur explizite Bild-Embeds, keine beliebigen Website-Vorschaubilder.
+    # Accept explicit image embeds, not arbitrary website preview thumbnails.
     for embed in message.embeds:
         if embed.type == "image" and embed.url:
             return embed.url
@@ -52,7 +52,7 @@ def image_url(message, max_bytes: int) -> str | None:
 
 async def find_image(message, limit: int, max_bytes: int) -> str:
     # Der aktuelle Anhang gewinnt. Ohne Anhang wird unmittelbar vor dem
-    # Nutzerbefehl gesucht; Bot-Ergebnisse dürfen ausdrücklich Eingaben sein.
+    # Look for user commands; bot results are valid input images.
     found = image_url(message, max_bytes)
     if found:
         return found
@@ -60,4 +60,4 @@ async def find_image(message, limit: int, max_bytes: int) -> str:
         found = image_url(previous, max_bytes)
         if found:
             return found
-    raise ValueError(f"Kein Bild in den letzten {limit} Nachrichten gefunden.")
+    raise ValueError(f"No image found in the last {limit} messages.")

@@ -1,4 +1,4 @@
-"""Begrenzte HTTP-Downloads mit geprüften DNS-Ergebnissen und Weiterleitungen."""
+"""Bounded HTTP downloads with validated DNS results and redirects."""
 
 import asyncio
 import ipaddress
@@ -36,7 +36,7 @@ def validate_url(url: str) -> None:
         if not public_address(host):
             raise ValueError()
     except ValueError:
-        raise ValueError("Die Bild-URL ist ungültig oder verweist auf ein internes Netzwerkziel.") from None
+        raise ValueError("The image URL is invalid or points to a private network.") from None
 
 
 class PublicResolver:
@@ -44,9 +44,9 @@ class PublicResolver:
         loop = asyncio.get_running_loop()
         addresses = await loop.getaddrinfo(host, port, type=socket.SOCK_STREAM, family=family)
         if not addresses or any(not public_address(item[4][0]) for item in addresses):
-            raise ValueError("Die Bildadresse verweist auf ein internes Netzwerkziel.")
-        # Diese geprüften IPs verwendet direkt der Connector; keine zweite
-        # DNS-Auflösung zwischen Sicherheitsprüfung und Verbindung.
+            raise ValueError("The image address points to a private network.")
+        # The connector uses these validated IPs directly, avoiding another
+        # DNS lookup between validation and connection.
         return [{"hostname": host, "host": item[4][0], "port": port,
                  "family": item[0], "proto": item[2], "flags": socket.AI_NUMERICHOST}
                 for item in addresses]
@@ -65,7 +65,7 @@ def create_download_session(timeout: float):
 
 
 async def download_image(session, url: str, destination: Path, max_bytes: int, timeout: float):
-    # Gesamtes Redirect-/Download-Budget, nicht ein neues Budget je Weiterleitung.
+    # Share one time budget across all redirects and the download.
     try:
         async with asyncio.timeout(timeout):
             for _ in range(6):
@@ -74,26 +74,26 @@ async def download_image(session, url: str, destination: Path, max_bytes: int, t
                     if response.status in {301, 302, 303, 307, 308}:
                         location = response.headers.get("Location")
                         if not location:
-                            raise ValueError("Ungültige Weiterleitung beim Bilddownload.")
+                            raise ValueError("Invalid redirect while downloading the image.")
                         url = urljoin(url, location)
                         continue
                     if response.status != 200:
-                        raise ValueError(f"Bilddownload fehlgeschlagen (HTTP {response.status}).")
+                        raise ValueError(f"Image download failed (HTTP {response.status}).")
                     if response.headers.get("Content-Encoding", "identity").lower() not in {"identity", ""}:
-                        raise ValueError("Komprimierte HTTP-Antworten werden nicht unterstützt.")
+                        raise ValueError("Compressed HTTP responses are not supported.")
                     if response.content_length is not None and response.content_length > max_bytes:
-                        raise ValueError("Bilddownload überschreitet das Größenlimit.")
+                        raise ValueError("Image download exceeds the size limit.")
                     total = 0
                     with destination.open("wb") as output:
                         async for chunk in response.content.iter_chunked(64*1024):
                             total += len(chunk)
                             if total > max_bytes:
-                                raise ValueError("Bilddownload überschreitet das Größenlimit.")
+                                raise ValueError("Image download exceeds the size limit.")
                             output.write(chunk)
                     if total == 0:
-                        raise ValueError("Leere Bilddatei heruntergeladen.")
+                        raise ValueError("The downloaded image is empty.")
                     return
-            raise ValueError("Zu viele Weiterleitungen beim Bilddownload.")
+            raise ValueError("Too many image download redirects.")
     except BaseException:
         destination.unlink(missing_ok=True)
         raise

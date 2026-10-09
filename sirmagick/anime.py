@@ -1,9 +1,9 @@
-"""Face-anchored anime decals; uwu and blush are not enabled in the bot yet."""
+"""Face-anchored anime effects that retain the original facial texture."""
 import math
 
 import numpy as np
 import cv2
-from PIL import Image, ImageDraw, ImageFilter
+from PIL import Image, ImageDraw
 
 from .chudthor import OVAL
 from .warpface import EYES, MOUTH
@@ -11,23 +11,75 @@ from .warpface import EYES, MOUTH
 MODES = ("uwu", "blush", "sweat", "sparkle", "angry")
 
 
+def _cute_face(image, detection, mode):
+    """Use local feature scaling and translucent cheek color, without inpainting."""
+    from .face_modes import local_scale
+
+    original = np.array(image.convert("RGBA"))
+    pixels = original.copy()
+    if mode == "uwu":
+        for face in detection.faces:
+            points = np.array([(p.x, p.y) for p in face], dtype=np.float32)
+            for indices in EYES:
+                local_scale(pixels, points[list(indices)], 1.20, outer=2.0,
+                            padding=(1.15, 1.5))
+            local_scale(pixels, points[list(MOUTH)], .78, outer=1.8,
+                        padding=(1.15, 1.4))
+
+    for face in detection.faces:
+        points = np.array([(p.x, p.y) for p in face], dtype=np.float32)
+        contour = points[list(OVAL)]
+        eye_axis = points[263]-points[33]
+        eye_axis /= max(float(np.linalg.norm(eye_axis)), 1e-6)
+        down = np.array([-eye_axis[1], eye_axis[0]])
+        width = max(10., float(np.ptp(contour @ eye_axis)))
+        height = max(10., float(np.ptp(contour @ down)))
+        low = np.maximum(0, np.floor(contour.min(axis=0))).astype(int)
+        high = np.minimum([image.width, image.height], np.ceil(contour.max(axis=0)+1)).astype(int)
+        x0, y0 = low
+        x1, y1 = high
+        if x0 >= x1 or y0 >= y1:
+            continue
+        yy, xx = np.mgrid[y0:y1, x0:x1]
+        mask = np.zeros((y1-y0, x1-x0), np.uint8)
+        cv2.fillConvexPoly(mask, cv2.convexHull(np.rint(contour).astype(np.int32)-low), 255)
+        # Keep the eyes, nose, and lips free of cheek color and hatch marks.
+        from .warpface import NOSE
+        for indices in (*EYES, NOSE, MOUTH):
+            cv2.fillConvexPoly(mask, cv2.convexHull(np.rint(points[list(indices)]).astype(np.int32)-low), 0)
+        strength = np.zeros(mask.shape, np.float32)
+        hatches = np.zeros(mask.shape, np.uint8)
+        for eye, lip, side in ((33, 61, -1), (263, 291, 1)):
+            center = points[eye]*.48+points[lip]*.52+eye_axis*side*width*.035
+            dx, dy = xx-center[0], yy-center[1]
+            u, v = dx*eye_axis[0]+dy*eye_axis[1], dx*down[0]+dy*down[1]
+            strength = np.maximum(strength, np.exp(-.5*((u/(width*.105))**2+(v/(height*.045))**2)))
+            for shift in (-.035, 0, .035):
+                mid = center+eye_axis*width*shift
+                delta = eye_axis*width*.010-down*height*.023
+                a = tuple(np.rint(mid-delta-low).astype(int))
+                b = tuple(np.rint(mid+delta-low).astype(int))
+                cv2.line(hatches, a, b, 255, max(1, round(width*.006)), cv2.LINE_AA)
+        feather = np.clip(cv2.distanceTransform(mask, cv2.DIST_L2, 3)/max(1., width*.025), 0, 1)
+        strength *= feather
+        target = pixels[y0:y1, x0:x1, :3].astype(np.float32)
+        # Tint existing pixels rather than painting flat patches over skin.
+        pink = np.array([1.0, .28, .48], np.float32)
+        luminance = target.max(axis=2, keepdims=True)
+        tint = np.maximum(target, luminance*.9)*pink
+        amount = (.30*strength + .26*(hatches/255)*feather)[..., None]
+        pixels[y0:y1, x0:x1, :3] = np.clip(target*(1-amount)+tint*amount, 0, 255).astype(np.uint8)
+    pixels[..., 3] = original[..., 3]
+    return Image.fromarray(pixels)
+
+
 def apply_effect(image, detection, mode, pass_number=1):
     detection.require("face")
     if mode not in MODES:
         raise ValueError(mode)
+    if mode in {"uwu", "blush"}:
+        return _cute_face(image, detection, mode)
     base = image.convert("RGBA").copy()
-    if mode == "uwu":
-        pixels = np.array(base)
-        removal = np.zeros((image.height, image.width), np.uint8)
-        for face in detection.faces:
-            points = np.array([(p.x, p.y) for p in face], np.float32)
-            for indices in (*EYES, MOUTH):
-                feature = points[list(indices)]
-                center = np.rint((feature.min(axis=0)+feature.max(axis=0))/2).astype(int)
-                extent = np.maximum(3, (feature.max(axis=0)-feature.min(axis=0))/2+[3, 3])
-                cv2.ellipse(removal, tuple(center), tuple(np.ceil(extent).astype(int)), 0, 0, 360, 255, -1)
-        pixels[..., :3] = cv2.inpaint(pixels[..., :3].copy(), removal, 4, cv2.INPAINT_TELEA)
-        base = Image.fromarray(pixels)
     # Draw at double resolution for clean decal edges.
     supersample = 2
     size = (base.width*supersample, base.height*supersample)
@@ -44,33 +96,6 @@ def apply_effect(image, detection, mode, pass_number=1):
             return ((center[0]+dx*math.cos(angle)-dy*math.sin(angle))*supersample,
                     (center[1]+dx*math.sin(angle)+dy*math.cos(angle))*supersample)
         stroke = max(2, round(width*.012*supersample))
-        if mode in {"uwu", "blush"}:
-            cheeks = Image.new("RGBA", size)
-            cheek_draw = ImageDraw.Draw(cheeks)
-            for side in (-1, 1):
-                cx, cy = position(side*.30, .12)
-                rx, ry = width*.16*supersample, height*.075*supersample
-                cheek_draw.ellipse((cx-rx, cy-ry, cx+rx, cy+ry), fill=(255, 95, 145, 80))
-            cheeks = cheeks.filter(ImageFilter.GaussianBlur(max(1, width*.055*supersample)))
-            overlay = Image.alpha_composite(overlay, cheeks)
-            draw = ImageDraw.Draw(overlay)
-        if mode == "uwu":
-            # Literal U-w-U expression, replacing rather than covering features.
-            ink = (65, 38, 45, 245)
-            for indices in EYES:
-                eye = np.array([(face[i].x, face[i].y) for i in indices])
-                cx, cy = eye.mean(axis=0)*supersample
-                radius = float(np.ptp(eye[:, 0]))*.48*supersample
-                arc = [(cx+radius*math.cos(t), cy-radius*.22+radius*.48*math.sin(t))
-                       for t in np.linspace(0, math.pi, 48)]
-                draw.line(arc, fill=ink, width=stroke+1, joint="curve")
-            mouth = np.array([(face[i].x, face[i].y) for i in MOUTH])
-            mx, my = mouth.mean(axis=0)*supersample
-            radius = width*.043*supersample
-            for side in (-1, 1):
-                cx = mx+side*radius*.65
-                draw.arc((cx-radius, my-radius*.55, cx+radius, my+radius*.65),
-                         0, 180, fill=ink, width=stroke)
         if mode == "sweat":
             # Different side on the next pass makes the second drop accumulate.
             side = 1 if pass_number % 2 else -1

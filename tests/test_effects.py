@@ -64,10 +64,42 @@ class EffectTests(unittest.TestCase):
         with patch("sirmagick.effects.secrets.choice", return_value="droste") as choice:
             self.assertEqual(resolve_effect("random"), "droste")
             self.assertNotIn("random", choice.call_args.args[0])
-        self.assertNotIn("uwu", EFFECTS)
-        self.assertNotIn("blush", EFFECTS)
+        self.assertIn("uwu", EFFECTS)
+        self.assertIn("blush", EFFECTS)
         with self.assertRaises(ValueError):
             apply_effect(Image.new("RGB", (4, 4)), None, "random")
+
+    def test_blush_keeps_background_and_feature_pixels_unchanged(self):
+        pixels = np.random.default_rng(19).integers(30, 230, (160, 200, 4), dtype=np.uint8)
+        face = synthetic_face(100, 80)
+        detection = Detection(200, 160, 200, 160, [face], [], 0)
+        image = Image.fromarray(pixels)
+        first = apply_effect(image, detection, "blush")
+        second = apply_effect(first, detection, "blush")
+        for result in (np.asarray(first), np.asarray(second)):
+            np.testing.assert_array_equal(result[:60], pixels[:60])
+            np.testing.assert_array_equal(result[101:], pixels[101:])
+            np.testing.assert_array_equal(result[:, :85], pixels[:, :85])
+            np.testing.assert_array_equal(result[:, 116:], pixels[:, 116:])
+            for index in (33, 263, 1, 61, 291):
+                x, y = round(face[index].x), round(face[index].y)
+                np.testing.assert_array_equal(result[y, x], pixels[y, x])
+
+    def test_cute_effects_handle_rotated_faces_at_image_edges(self):
+        from sirmagick.data import Point
+        pixels = np.random.default_rng(22).integers(20, 240, (50, 50, 4), dtype=np.uint8)
+        face = synthetic_face(6, 8)
+        angle = .55
+        rotated = [Point(6+(p.x-6)*np.cos(angle)-(p.y-8)*np.sin(angle),
+                         8+(p.x-6)*np.sin(angle)+(p.y-8)*np.cos(angle)) for p in face]
+        detection = Detection(50, 50, 50, 50, [rotated], [], 0)
+        image = Image.fromarray(pixels)
+        for mode in ("uwu", "blush"):
+            with self.subTest(mode=mode):
+                result = np.asarray(apply_effect(image, detection, mode))
+                np.testing.assert_array_equal(result[..., 3], pixels[..., 3])
+                self.assertFalse(np.array_equal(result, pixels))
+                np.testing.assert_array_equal(result[35:, 35:], pixels[35:, 35:])
 
     def test_ultrawide_rejects_output_above_pixel_limit_before_resize(self):
         with patch("sirmagick.images.MAX_PIXELS", 100):

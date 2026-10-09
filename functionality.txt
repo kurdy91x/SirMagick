@@ -1,14 +1,17 @@
-sir magick should be able to:
+Historical SirMagick concept notes (see README.md for current behavior)
 
-discord bot
-run as docker container
+Run a CPU-based Discord image bot in Docker.
 
-@sirmagick [command] # nimmt das letzte bild im chat und verarbeitet es
-@sirmagick [command] [imageurl] # nimmt das übergebene bild und verarbeitet es
+@sirmagick [command]             Use the most recent channel image.
+@sirmagick [command] [imageurl]  Process an explicitly supplied image.
 
-sirmagick hat eine fülle von tools um bilder zu bearbeiten darunter
-fatmagic: gesicht erkennen und blockig machen. + körper erkennen und blockig machen, wie minecraft zb von der blockigkeit, nur ganz leicht das bild verzerren
-chudthor: gesicht erkennen und den kopf größer machen während man augen mund nase kleiner macht, zentriert zu mitte
-warpface: kopf als zusammenhängenden bereich vergrößern, außen leicht eckiger formen. augen, nase und mund einzeln an ihrer position kleiner skalieren; umgebende pixel schließen lokal den übergang. separater effekt von chudthor.
-blockface: innere gesichtsfl?che als ganzes kleiner skalieren; nur einen ?u?eren hautstreifen bis zur unver?nderten gesichtskontur strecken. zun?chst keine kopfvergr??erung oder rechteckige form.
-deepfry: deepfried das bild (shitpost deepfry)
+Initial effect ideas:
+fatmagic: detect the face and body and make them slightly blocky, similar to Minecraft.
+          The current implementation widens the face and detected upper body instead.
+chudthor: enlarge and square the face while shrinking its features toward the center.
+warpface: enlarge the head as a connected region and shrink individual features locally.
+blockface: uniformly shrink the inner face, stretching only the surrounding skin strip;
+           preserve the outer contour and omit head enlargement.
+deepfry: exaggerated colors, compression artifacts, and shitpost stickers.
+
+These notes preserve the original ideas; they are not the active specification.

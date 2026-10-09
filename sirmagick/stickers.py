@@ -1,4 +1,4 @@
-"""Kleine selbst gezeichnete Meme-Sticker ohne externe Assets oder Fonts."""
+"""Small hand-drawn meme stickers without external assets or fonts."""
 
 import math
 
@@ -50,7 +50,7 @@ def add_stickers(image: Image.Image, rng: np.random.Generator) -> Image.Image:
     if min(image.size) < 32:
         return image.copy()
     result = image.convert("RGBA")
-    # Unterschiedliche Eckbereiche verhindern, dass die zwei Sticker sich stapeln.
+    # Use different corners so the two stickers do not overlap.
     corners = rng.permutation(4)
     kinds = rng.choice(4, size=int(rng.integers(1, 3)), replace=False)
     for index, kind in enumerate(kinds):

@@ -1,4 +1,4 @@
-"""Expliziter Download der offiziellen MediaPipe-Modelle."""
+"""Explicit download of the official MediaPipe models."""
 
 from pathlib import Path
 from urllib.request import urlopen
@@ -26,10 +26,10 @@ def download_models(directory: Path) -> list[Path]:
                 while chunk := response.read(1024 * 1024):
                     total += len(chunk)
                     if total > 100 * 1024 * 1024:
-                        raise ValueError("Modelldownload überschreitet 100 MiB.")
+                        raise ValueError("Model download exceeds 100 MiB.")
                     output.write(chunk)
             if not zipfile.is_zipfile(temporary):
-                raise ValueError(f"Ungültiges Modellarchiv: {name}")
+                raise ValueError(f"Invalid model archive: {name}")
             os.replace(temporary, target)
         finally:
             temporary.unlink(missing_ok=True)

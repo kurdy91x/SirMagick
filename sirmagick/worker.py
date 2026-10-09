@@ -34,7 +34,7 @@ class ProcessWorker:
                 self.process.stdin.flush()
                 line = await asyncio.to_thread(self.process.stdout.readline)
                 if not line:
-                    raise RuntimeError("Bildverarbeitung wurde unerwartet beendet.")
+                    raise RuntimeError("Image processing stopped unexpectedly.")
                 result = json.loads(line)
                 if "error" in result:
                     raise ValueError(result["error"])
@@ -47,7 +47,7 @@ class ProcessWorker:
 def serve():
     from contextlib import redirect_stdout
     from .images import load_image
-    from .effects import EFFECTS, FACE_EFFECTS, resolve_effect, apply_effect
+    from .effects import EFFECTS, FACE_EFFECTS, DETECTION_EFFECTS, resolve_effect, apply_effect
     detector = None
     protocol = sys.stdout
     try:
@@ -57,17 +57,18 @@ def serve():
                 with redirect_stdout(sys.stderr):
                     effect = request["effect"]
                     if effect not in EFFECTS:
-                        raise ValueError("Unbekannter Effekt.")
+                        raise ValueError("Unknown effect.")
                     was_random = effect == "random"
                     effect = resolve_effect(effect)
                     image = load_image(Path(request["source"]))
                     detection = None
-                    if effect in FACE_EFFECTS:
+                    if effect in DETECTION_EFFECTS:
                         if detector is None:
                             from .detection import Detector
                             detector = Detector(Path(request["models"]), request["max_side"], request["max_people"])
                         detection = detector.detect(image)
-                        detection.require("face")
+                        if effect in FACE_EFFECTS:
+                            detection.require("face")
                     result = apply_effect(image, detection, effect)
                     output = Path(request["destination"]).with_suffix(".png")
                     if was_random:
@@ -82,12 +83,12 @@ def serve():
                                 if output.stat().st_size <= request["max_output"]:
                                     break
                         if output.stat().st_size > request["max_output"]:
-                            raise ValueError("Ergebnis ist zu groß für den Upload.")
+                            raise ValueError("The result is too large to upload.")
                 response = {"output": str(output)}
             except Exception as exc:
                 from .data import NoDetectionError
-                response = {"error": "Kein Gesicht erkannt." if isinstance(exc, NoDetectionError)
-                            else "Bild konnte nicht verarbeitet werden. Format, Modelle und Größenlimit prüfen."}
+                response = {"error": "No face detected." if isinstance(exc, NoDetectionError)
+                            else "Could not process the image. Check its format, the models, and the size limit."}
             protocol.write(json.dumps(response) + "\n")
             protocol.flush()
     finally:

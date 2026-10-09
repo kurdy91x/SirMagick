@@ -20,13 +20,16 @@ class BotTests(unittest.IsolatedAsyncioTestCase):
         from sirmagick.discord_bot import MagickBot
         from sirmagick.effects import EFFECTS
         bot = MagickBot(BotConfig(token="unused", guild_ids=frozenset({1})))
-        bot.tree.sync = AsyncMock(return_value=[SimpleNamespace(name="help")])
+        bot.tree.sync = AsyncMock(return_value=[SimpleNamespace(name="sm_help")])
         guild = SimpleNamespace(id=1, name="test")
+        import discord
+        bot.tree.add_command(discord.app_commands.Command(name="help", description="Legacy help",
+            callback=bot.tree.get_command("sm_help").callback), guild=guild)
         try:
             with self.assertLogs("sirmagick.discord_bot", level="INFO"):
                 await asyncio.gather(bot.sync_guild_commands(guild), bot.sync_guild_commands(guild))
             bot.tree.sync.assert_awaited_once_with(guild=guild)
-            self.assertEqual({cmd.name for cmd in bot.tree.get_commands(guild=guild)}, EFFECTS | {"help"})
+            self.assertEqual({cmd.name for cmd in bot.tree.get_commands(guild=guild)}, {"sm_"+name for name in EFFECTS | {"help"}})
             await bot.sync_guild_commands(SimpleNamespace(id=2, name="excluded"))
             self.assertEqual(bot.tree.sync.await_count, 1)
         finally:
@@ -53,16 +56,16 @@ class BotTests(unittest.IsolatedAsyncioTestCase):
         import discord
         from sirmagick.discord_bot import MagickBot
         bot = MagickBot(BotConfig(token="unused"))
-        bot.tree.sync = AsyncMock(return_value=[SimpleNamespace(name="help")])
+        bot.tree.sync = AsyncMock(return_value=[SimpleNamespace(name="sm_help")])
         try:
             with self.assertLogs("sirmagick.discord_bot", level="INFO") as logs:
                 await bot.sync_commands()
-            self.assertTrue(any("bestätigt 1" in line and "/help" in line for line in logs.output))
+            self.assertTrue(any("confirmed 1" in line and "/sm_help" in line for line in logs.output))
             bot.tree.sync.side_effect = discord.HTTPException(
                 SimpleNamespace(status=403, reason="Forbidden"), {"code": 50001, "message": "Missing Access"})
             with self.assertLogs("sirmagick.discord_bot", level="WARNING") as logs:
                 await bot.sync_commands()
-            self.assertIn("HTTP 403, Discord-Code 50001", logs.output[0])
+            self.assertIn("HTTP 403, Discord code 50001", logs.output[0])
         finally:
             await bot.close()
 
@@ -79,19 +82,19 @@ class BotTests(unittest.IsolatedAsyncioTestCase):
         try:
             commands = {command.name: command for command in bot.tree.get_commands()}
             from sirmagick.effects import EFFECTS
-            self.assertEqual(set(commands), EFFECTS | {"help"})
-            schema = commands["blockface"].to_dict(bot.tree)
-            self.assertEqual([option["name"] for option in schema["options"]], ["bild", "url"])
-            await commands["blockface"].callback(interaction, bild=attachment)
+            self.assertEqual(set(commands), {"sm_"+name for name in EFFECTS | {"help"}})
+            schema = commands["sm_blockface"].to_dict(bot.tree)
+            self.assertEqual([option["name"] for option in schema["options"]], ["image", "url"])
+            await commands["sm_blockface"].callback(interaction, image=attachment)
             interaction.response.defer.assert_awaited_once_with(thinking=True)
             job = bot.jobs.get_nowait()
             self.assertEqual(job.command.effect, "blockface")
             self.assertEqual(job.message.attachments, [attachment])
             self.assertTrue(job.ready.is_set())
             bot.jobs.task_done()
-            await commands["deepfry"].callback(interaction)
+            await commands["sm_deepfry"].callback(interaction)
             self.assertTrue(bot.jobs.empty())
-            self.assertIn("warten", interaction.followup.send.call_args.args[0])
+            self.assertIn("wait", interaction.followup.send.call_args.args[0])
             await job.message.reply("result")
             interaction.channel.send.assert_awaited_once()
         finally:
@@ -103,14 +106,14 @@ class BotTests(unittest.IsolatedAsyncioTestCase):
         interaction = SimpleNamespace(guild_id=1, channel_id=2, guild=SimpleNamespace(id=1), channel=SimpleNamespace(id=2),
             response=SimpleNamespace(send_message=AsyncMock(), defer=AsyncMock()))
         try:
-            await bot.tree.get_command("help").callback(interaction)
-            self.assertIn("/blockface", interaction.response.send_message.call_args.args[0])
+            await bot.tree.get_command("sm_help").callback(interaction)
+            self.assertIn("/sm_blockface", interaction.response.send_message.call_args.args[0])
             self.assertTrue(interaction.response.send_message.call_args.kwargs["ephemeral"])
-            await bot.tree.get_command("deepfry").callback(interaction, bild=object(), url="https://example.com/a")
+            await bot.tree.get_command("sm_deepfry").callback(interaction, image=object(), url="https://example.com/a")
             interaction.response.defer.assert_not_awaited()
             interaction.channel.id = 3
-            await bot.tree.get_command("deepfry").callback(interaction)
-            self.assertIn("nicht freigegeben", interaction.response.send_message.call_args.args[0])
+            await bot.tree.get_command("sm_deepfry").callback(interaction)
+            self.assertIn("not enabled", interaction.response.send_message.call_args.args[0])
             self.assertTrue(bot.jobs.empty())
         finally:
             await bot.close()
@@ -127,7 +130,7 @@ class BotTests(unittest.IsolatedAsyncioTestCase):
             async def process(request, timeout):
                 calls.append(request["effect"])
                 if len(calls) == 1:
-                    raise ValueError("Kein Gesicht erkannt.")
+                    raise ValueError("No face detected.")
                 output = Path(request["destination"]).with_suffix(".png")
                 Image.new("RGB", (16, 16)).save(output)
                 return output

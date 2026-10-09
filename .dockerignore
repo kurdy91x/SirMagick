@@ -4,5 +4,12 @@
 !.dockerignore
 !requirements.txt
 !pyproject.toml
+!LICENSE
+!THIRD_PARTY_NOTICES.md
+!licenses/
+!licenses/Apache-2.0.txt
 !sirmagick/
 !sirmagick/*.py
+!sirmagick/assets/
+!sirmagick/assets/shades.png
+!sirmagick/assets/blunt.png

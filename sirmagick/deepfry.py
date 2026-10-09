@@ -1,4 +1,4 @@
-"""Feste Deepfry-Rezeptur: Farbe, harte Kanten, Korn und echte JPEG-Artefakte."""
+"""Fixed deepfry recipe: color, sharp edges, grain, and actual JPEG artifacts."""
 
 from hashlib import blake2b
 from io import BytesIO
@@ -18,10 +18,10 @@ def _jpeg(image: Image.Image, quality: int) -> Image.Image:
 
 
 def apply_deepfry(image: Image.Image, *, seed: int | None = None) -> Image.Image:
-    """Ohne Gesichtserkennung; gleiche Abmessungen und unveränderter Alpha-Kanal.
+    """No face detection required; preserve dimensions and the alpha channel.
 
-    Rauschen folgt dem Bildinhalt, Sticker variieren pro Auftrag. Ein optionaler
-    interner Seed ermöglicht reproduzierbare Tests, ohne Stärkeparameter im CLI.
+    Noise follows image content and stickers vary per job. An optional
+    internal seed supports reproducible tests without a CLI strength setting.
     """
     rgba = image.convert("RGBA")
     alpha = rgba.getchannel("A")
@@ -33,7 +33,7 @@ def apply_deepfry(image: Image.Image, *, seed: int | None = None) -> Image.Image
     working = ImageEnhance.Color(working).enhance(2.7)
     working = ImageEnhance.Contrast(working).enhance(1.65)
     working = working.filter(ImageFilter.UnsharpMask(radius=2.2, percent=320, threshold=1))
-    # Warme, übersteuerte Mitteltöne; keine Emojis/Laseraugen oder Gesichtspflicht.
+    # Warm, overdriven midtones; no face detection required.
     pixels = np.asarray(working, dtype=np.float32)
     pixels = 255*np.power(pixels/255, 0.88)
     pixels *= np.array([1.10, 1.02, 0.84], np.float32)

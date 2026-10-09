@@ -1,4 +1,4 @@
-"""Warpface: Kopf-Collage mit lokal verkleinerten Originalmerkmalen."""
+"""Warpface: enlarge the head with locally reduced original features."""
 
 import math
 
@@ -25,7 +25,7 @@ def _polygon_mask(size, points):
 
 
 def _shrink_features(rgba, points):
-    """Merkmale lokal skalieren, umgebende Pixel schlie?en den ?bergangsring."""
+    """Scale features locally; surrounding pixels fill the transition ring."""
     from .chudthor import radial_source, bilinear_rgba
 
     result = rgba.copy()
@@ -34,8 +34,8 @@ def _shrink_features(rgba, points):
         feature = points[list(indices)]
         center = (feature.min(axis=0)+feature.max(axis=0))/2
         extent = (feature.max(axis=0)-feature.min(axis=0))/2
-        # Die Nase einschlie?lich Nasenfl?gel/Schatten markieren, Augen samt
-        # Lidrand. Ein sehr flaches Auge erh?lt einen ausreichend hohen ?bergang.
+        # Include nostrils and nose shadows, and include the eyelids
+        # around each eye. Give narrow eyes a sufficiently tall transition.
         rx = max(2.0, extent[0]*(1.45 if indices == NOSE else 1.10))
         ry = max(2.0, extent[1]*1.25, rx*0.30)
         outer = 1.9
@@ -51,8 +51,8 @@ def _shrink_features(rgba, points):
         factor = np.divide(source_radius, radius, out=np.full_like(radius, 1/FEATURE_SCALE),
                            where=radius > 1e-6)
         source_x, source_y = center[0]+dx*factor*rx, center[1]+dy*factor*ry
-        # Jeder Zielpixel erh?lt einen vorhandenen Quellpixel. Au?erhalb des
-        # ?bergangsrings bleibt das Bild bitgenau erhalten, auch bei Alpha.
+        # Each destination pixel samples an existing source pixel. Outside the
+        # transition ring, preserve the image exactly, including alpha.
         sampled = bilinear_rgba(result, source_x, source_y)
         active = radius < outer
         target = result[y0:y1, x0:x1]
@@ -61,7 +61,7 @@ def _shrink_features(rgba, points):
 
 
 def _head_mask(rgba, points, rx, ry):
-    """Gesicht als sichere Saat; Haare/Kopfrand mit GrabCut annähern."""
+    """Use the face as a reliable seed; approximate hair/head edges with GrabCut."""
     height, width = rgba.shape[:2]
     outline = points[list(OVAL)]
     center = (outline.min(axis=0)+outline.max(axis=0))/2
@@ -73,7 +73,7 @@ def _head_mask(rgba, points, rx, ry):
     head += center
     probable = _polygon_mask((width, height), head)
     sure = _polygon_mask((width, height), outline)
-    # Segmentierung auf begrenzter Auflösung, Originaltextur bleibt unberührt.
+    # Segment at bounded resolution while preserving the original texture.
     factor = min(1.0, 512/max(width, height))
     small_size = (max(2, round(width*factor)), max(2, round(height*factor)))
     rgb = cv2.resize(rgba[..., :3], small_size, interpolation=cv2.INTER_AREA)
@@ -95,14 +95,14 @@ def _head_mask(rgba, points, rx, ry):
 
 
 def _square_outer_cheeks(rgba, mask, points, rx, ry):
-    """Nur schmale äußere Wangenstreifen verschieben; Mitte bleibt unverändert."""
+    """Move narrow outer cheek strips only; keep the center unchanged."""
     height, width = rgba.shape[:2]
     outline = points[list(OVAL)]
     center = (outline.min(axis=0)+outline.max(axis=0))/2
     xx, yy = np.meshgrid(np.arange(width, dtype=np.float32), np.arange(height, dtype=np.float32))
     dx, dy = (xx-center[0])/rx, (yy-center[1])/ry
     side = np.clip((np.abs(dx)-0.55)/0.35, 0, 1)
-    # Lokale, geringe Konturänderung, kein radialer Ganzgesichtsfilter.
+    # Apply a small local contour adjustment rather than a radial whole-face filter.
     vertical = np.exp(-((dy-0.55)/0.48)**4)
     outside = np.clip((1.5-np.abs(dx))/0.35, 0, 1)
     source_x = (xx-np.sign(dx)*rx*0.09*side*vertical*outside).astype(np.float32)
@@ -114,9 +114,9 @@ def _square_outer_cheeks(rgba, mask, points, rx, ry):
 def apply_warpface(image: Image.Image, detection: Detection) -> Image.Image:
     detection.require("face")
     if image.size != (detection.width, detection.height):
-        raise ValueError("Erkennungsdaten passen nicht zur Bildgröße.")
+        raise ValueError("Detection dimensions do not match the image.")
     result = image.convert("RGBA").copy()
-    # Große Köpfe zuerst, kleinere Köpfe bei Überlappung darüber einsetzen.
+    # Process larger heads first; composite smaller overlapping heads on top.
     faces = sorted(detection.faces, key=lambda f: -abs(f[454].x-f[234].x))
     original = np.array(image.convert("RGBA"))
     width, height = image.size
@@ -140,7 +140,7 @@ def apply_warpface(image: Image.Image, detection: Detection) -> Image.Image:
         head = Image.fromarray(edited)
         size = (max(1, round(head.width*HEAD_SCALE)), max(1, round(head.height*HEAD_SCALE)))
         head = head.resize(size, Image.Resampling.LANCZOS)
-        # Am Hals verankern, Kopf wächst überwiegend nach oben und zur Seite.
+        # Anchor at the neck; expand the head mostly upward and sideways.
         anchor = np.array([center[0], center[1]+ry*1.05])
         left = round(anchor[0]+(x0-anchor[0])*HEAD_SCALE)
         top = round(anchor[1]+(y0-anchor[1])*HEAD_SCALE)
