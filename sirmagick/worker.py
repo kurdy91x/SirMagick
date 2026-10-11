@@ -34,6 +34,9 @@ class ProcessWorker:
                 self.process.stdin.flush()
                 line = await asyncio.to_thread(self.process.stdout.readline)
                 if not line:
+                    code = self.process.poll()
+                    import logging
+                    logging.getLogger(__name__).warning("Image worker closed its output unexpectedly (exit code %s).", code)
                     raise RuntimeError("Image processing stopped unexpectedly.")
                 result = json.loads(line)
                 if "error" in result:

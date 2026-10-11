@@ -152,6 +152,49 @@ class BotTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(list(root.iterdir()), [])
             await bot.close()
 
+    async def test_permission_failures_name_the_stage_and_do_not_block_queue(self):
+        import discord
+        from sirmagick.discord_bot import MagickBot, Job
+        from sirmagick.bot_commands import Command
+        for stage in ('image lookup','upload'):
+            with self.subTest(stage=stage), fixture_directory() as root:
+                bot = MagickBot(BotConfig(token='unused',work=root))
+                bot.status = AsyncMock()
+                forbidden = discord.Forbidden(SimpleNamespace(status=403,reason='Forbidden'),
+                                              {'message':'Missing Permissions','code':50013})
+                bot.reply = AsyncMock(side_effect=[forbidden,None] if stage=='upload' else None)
+                message = SimpleNamespace(author=SimpleNamespace(id=1),
+                                          guild=SimpleNamespace(id=10,filesize_limit=100000),
+                                          channel=SimpleNamespace(id=20))
+                async def process(request,timeout):
+                    output = Path(request['destination']).with_suffix('.png')
+                    Image.new('RGB',(16,16)).save(output)
+                    return output
+                async def download(session,url,destination,*args):
+                    destination.write_bytes(b'placeholder')
+                bot.worker.run = process
+                for _ in range(2):
+                    job = Job(message,Command('deepfry'))
+                    job.ready.set()
+                    bot.jobs.put_nowait(job)
+                lookup = AsyncMock(side_effect=[forbidden,'https://example.com/image.png']
+                                   if stage=='image lookup' else None,
+                                   return_value='https://example.com/image.png')
+                with patch('sirmagick.discord_bot.find_image',lookup), patch('sirmagick.discord_bot.download_image',download):
+                    with self.assertLogs('sirmagick.discord_bot',level='WARNING') as logs:
+                        task = asyncio.create_task(bot.consume())
+                        await asyncio.wait_for(bot.jobs.join(),5)
+                        task.cancel()
+                        with self.assertRaises(asyncio.CancelledError):
+                            await task
+                self.assertIn('HTTP=403 Discord code=50013',' '.join(logs.output))
+                statuses = [call.args[1] for call in bot.status.await_args_list]
+                permission = 'Read Message History' if stage=='image lookup' else 'Attach Files'
+                self.assertTrue(any(permission in text for text in statuses))
+                self.assertIn('Done.',statuses)
+                self.assertEqual(list(root.iterdir()),[])
+                await bot.close()
+
     def test_commands(self):
         self.assertEqual(parse_command("@sirmagick help", 42).effect, "help")
         self.assertEqual(parse_command("@SirMagick blockface", 42).effect, "blockface")

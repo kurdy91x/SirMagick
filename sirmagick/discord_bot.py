@@ -280,14 +280,18 @@ class MagickBot(discord.Client):
         while True:
             job = await self.jobs.get()
             directory = cfg.work / uuid4().hex
+            stage = "setup"
             try:
                 await job.ready.wait()
                 await self.status(job, "Processing image …")
                 directory.mkdir()
                 async with asyncio.timeout(cfg.download_timeout):
+                    stage = "image lookup"
                     url = job.command.url or await find_image(job.message, cfg.history_limit, cfg.max_download)
                     source = directory / "input"
+                    stage = "download"
                     await download_image(self.downloads, url, source, cfg.max_download, cfg.download_timeout)
+                stage = "processing"
                 output = await self.worker.run({
                     "effect": job.command.effect, "source": str(source),
                     "destination": str(directory / "result"), "models": str(cfg.models),
@@ -296,6 +300,7 @@ class MagickBot(discord.Client):
                 }, cfg.process_timeout)
                 attachment = discord.File(output, filename=output.name)
                 try:
+                    stage = "upload"
                     label = job.command.effect
                     if label == "random" and "-random-" in output.stem:
                         label = "random → " + output.stem.split("-random-", 1)[1]
@@ -307,9 +312,28 @@ class MagickBot(discord.Client):
                 await self.status(job, "Time limit reached. Job aborted.")
             except ValueError as exc:
                 await self.status(job, str(exc))
-            except Exception:
-                logging.warning("Image job failed; continuing the queue.")
-                await self.status(job, "Job failed. Check the image, bot permissions, and models.")
+            except discord.HTTPException as exc:
+                LOGGER.warning("Image job failed during %s: effect=%s guild=%s channel=%s "
+                               "HTTP=%s Discord code=%s; continuing the queue.",
+                               stage, job.command.effect, getattr(job.message.guild, 'id', None),
+                               getattr(getattr(job.message, 'channel', None), 'id', None), exc.status, exc.code)
+                if exc.status == 403:
+                    permission = "View Channel and Read Message History" if stage == "image lookup" else (
+                        "Send Messages, Attach Files, and Send Messages in Threads (for threads)"
+                        if stage == "upload" else "View Channel and Send Messages")
+                    await self.status(job, f"Missing Discord permissions during {stage}. Check {permission} in this channel, including role/category overrides.")
+                elif exc.status == 413 or exc.code == 40005:
+                    await self.status(job, "Discord rejected the upload as too large for this server.")
+                else:
+                    await self.status(job, f"Discord request failed during {stage} (HTTP {exc.status}, code {exc.code}).")
+            except Exception as exc:
+                LOGGER.warning("Image job failed during %s: effect=%s guild=%s exception=%s; "
+                               "continuing the queue.", stage, job.command.effect,
+                               getattr(job.message.guild, 'id', None), type(exc).__name__)
+                message = ("Image worker stopped unexpectedly. Check container memory limits and server logs."
+                           if stage == "processing" and isinstance(exc, RuntimeError)
+                           else f"Job failed during {stage} ({type(exc).__name__}). Check the server logs.")
+                await self.status(job, message)
             finally:
                 self.pending.discard(job.message.author.id)
                 self.jobs.task_done()
