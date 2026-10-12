@@ -14,3 +14,6 @@ examples/
 example.jpg
 tmp*/
 pip-*/
+
+# Original font archives may contain restricted fonts and sample artwork.
+sirmagick/assets/font/*.zip

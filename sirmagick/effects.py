@@ -1,8 +1,12 @@
 """Single effect catalog shared by the bot, CLI, and persistent worker."""
 from importlib import import_module
 import secrets
+from .effect_options import TEXT_VALIDATORS
 
 DESCRIPTIONS = {
+    "metalcover": "Distressed monochrome album cover with an angular thorn logo; text: BAND | Album",
+    "blackmetalcover": "Distressed monochrome album cover with a branching root logo; text: BAND | Album",
+    "deathmetalcover": "Distressed monochrome album cover with a dense jagged logo; text: BAND | Album",
     "hornijail": "Put the image behind the window panes of the horny jail meme",
     "surveillance": "Face tracking locks, tactical status panels, REC, and UTC timestamp",
     "alienface": "Long gray alien face with large dark eyes and tiny features",
@@ -96,7 +100,7 @@ EFFECTS = frozenset(DESCRIPTIONS)
 def resolve_effect(name):
     if name not in EFFECTS:
         raise ValueError("Unknown effect. Use @sirmagick help to list commands.")
-    return secrets.choice(sorted(EFFECTS-{"random", "achievement"})) if name == "random" else name
+    return secrets.choice(sorted(EFFECTS-{"random"}-TEXT_VALIDATORS.keys())) if name == "random" else name
 
 
 def apply_effect(image, detection, name, text=None):
@@ -115,6 +119,9 @@ def apply_effect(image, detection, name, text=None):
     if name == "surveillance":
         from .surveillance import apply_effect as surveillance
         return surveillance(image,detection)
+    if name in {'metalcover','blackmetalcover','deathmetalcover'}:
+        from .metalcover import apply_effect as metalcover
+        return metalcover(image,name,text)
     if name in TRANSFORMERS:
         from .face_transformers import apply_effect as transform
         return transform(image,detection,name)

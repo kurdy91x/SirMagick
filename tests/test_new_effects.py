@@ -15,10 +15,31 @@ from test_chudthor import synthetic_face
 
 
 class NewEffectTests(unittest.TestCase):
+    def test_metal_cover_text_and_distinct_styles(self):
+        from sirmagick.effect_options import metal_parts
+        modes = ('metalcover','blackmetalcover','deathmetalcover')
+        value = 'VOID SEPULCHER | Beneath the Last Sun'
+        self.assertEqual(metal_parts(value),['VOID SEPULCHER','Beneath the Last Sun'])
+        for invalid in ('','Band','| Title','Band |','Band | Title | Extra','x'*49+' | Title'):
+            with self.assertRaises(ValueError):
+                metal_parts(invalid)
+        image = Image.new('RGBA',(80,130),(70,90,110,255))
+        results = []
+        for mode in modes:
+            command = parse_command(f'@sirmagick {mode} {value} https://example.org/a.png',42)
+            self.assertEqual(command.text,value)
+            self.assertEqual(command.url,'https://example.org/a.png')
+            result = apply_effect(image,None,mode,text=value)
+            self.assertEqual(result.size,(900,900))
+            self.assertEqual(result.getchannel('A').getextrema(),(255,255))
+            results.append(np.array(result)[:260])
+        self.assertFalse(np.array_equal(results[0],results[1]))
+        self.assertFalse(np.array_equal(results[1],results[2]))
+
     def test_hornijail_replaces_only_window_panes(self):
         from pathlib import Path
         import sirmagick.meme_frames as memes
-        with Image.open(Path(memes.__file__).parent/'assets'/'horni.jail.jpg') as asset:
+        with Image.open(Path(memes.__file__).parent/'assets'/'img'/'horni.jail.jpg') as asset:
             template = np.array(asset.convert('RGBA'))
         result = np.array(apply_effect(Image.new('RGBA',(70,90),(255,0,128,255)),None,'hornijail'))
         self.assertEqual(result.shape,template.shape)
@@ -106,9 +127,33 @@ class NewEffectTests(unittest.TestCase):
         with patch('sirmagick.effects.secrets.choice',return_value='hodl') as choose:
             self.assertEqual(resolve_effect('random'),'hodl')
             self.assertNotIn('achievement',choose.call_args.args[0])
+            for name in ('metalcover','blackmetalcover','deathmetalcover'):
+                self.assertNotIn(name,choose.call_args.args[0])
 
 
 class AchievementSlashTests(unittest.IsolatedAsyncioTestCase):
+    async def test_metal_cover_slash_requires_text_and_passes_it_to_queue(self):
+        from sirmagick.bot_config import BotConfig
+        from sirmagick.discord_bot import MagickBot
+        bot = MagickBot(BotConfig(token='unused'))
+        bot._connection.user = SimpleNamespace(id=42)
+        bot.on_message = AsyncMock()
+        interaction = SimpleNamespace(id=1,user=SimpleNamespace(id=2),guild=SimpleNamespace(id=3),
+                                      channel=SimpleNamespace(id=4),guild_id=3,channel_id=4,
+                                      response=SimpleNamespace(defer=AsyncMock(),send_message=AsyncMock()))
+        try:
+            for name in ('metalcover','blackmetalcover','deathmetalcover'):
+                command = bot.tree.get_command('sm_'+name)
+                self.assertTrue(command.to_dict(bot.tree)['options'][0]['required'])
+                await command.callback(interaction,text='VOID SEPULCHER | Last Sun')
+                message = bot.on_message.call_args.args[0]
+                self.assertEqual(parse_command(message.content,42).text,'VOID SEPULCHER | Last Sun')
+                bot.on_message.reset_mock()
+                await command.callback(interaction,text='Missing separator')
+                bot.on_message.assert_not_awaited()
+        finally:
+            await bot.close()
+
     async def test_achievement_worker_receives_required_text(self):
         from test_core import fixture_directory
         from sirmagick.worker import ProcessWorker

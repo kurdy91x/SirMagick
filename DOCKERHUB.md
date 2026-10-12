@@ -4,6 +4,8 @@ A Discord bot for bizarre image effects. Runs on your CPU; no GPU required. Dete
 
 **Image:** `kurdy/sirmagick:latest` | **Platform:** Linux/amd64
 
+**Source code and documentation:** [GitHub](https://github.com/kurdy91x/SirMagick)
+
 ## Quick start
 
 Create a bot in the Discord Developer Portal, enable **Message Content Intent**, and invite it to your server. Required channel permissions: **View Channels**, **Read Message History**, **Send Messages**, and **Attach Files**. For threads, also enable **Send Messages in Threads**.
@@ -73,6 +75,7 @@ Upload an image to a channel and mention the bot:
 | `angry` | Adds an anime anger symbol |
 | `animerays` | Stretch the supplied anime action rays over the image |
 | `bigmouth` | Enlarges the mouth |
+| `blackmetalcover` | Monochrome album cover with a branching root logo; text: BAND NAME &#124; Album title |
 | `blockface` | Shrinks the inner face and stretches the surrounding strip of skin |
 | `blush` | Adds textured cheek tint and small anime hatch marks |
 | `buythedip` | A collapsing red chart and irrationally optimistic Bitcoin slogans |
@@ -85,6 +88,7 @@ Upload an image to a channel and mention the bot:
 | `complexsquare` | Folds image coordinates using a complex square |
 | `crt` | Curved retro monitor, scanlines, and color fringes (Retro) |
 | `dealwithit` | Pixel sunglasses and a blunt aligned to each detected face |
+| `deathmetalcover` | Deep red and charcoal album cover with a dense jagged logo; text: BAND NAME &#124; Album title |
 | `deepfry` | Adds exaggerated colors, noise, JPEG artifacts, and random stickers |
 | `devilhorns` | Glossy curved horns aligned with each head |
 | `droste` | Repeats the image in a logarithmic spiral |
@@ -114,6 +118,7 @@ Upload an image to a channel and mention the bot:
 | `logpolar` | Unwraps circles into straight bands |
 | `longface` | Stretch the face into a long narrow oval |
 | `meltface` | Let facial features melt downward |
+| `metalcover` | Monochrome album cover with an angular thorn logo; text: BAND NAME &#124; Album title |
 | `mouthvortex` | Twisting cylindrical streams covered in repeated mouths |
 | `newton` | Image-colored Newton fractal basins (Fractal) |
 | `nightvision` | Green low-light contrast, grain, and scanlines |
@@ -149,7 +154,7 @@ Without a URL, the bot uses an image attached to your command or the latest imag
 Slash commands are registered at startup. If they do not appear in Discord, use mention commands instead. Bot replies, help text, and command descriptions are in English.
 
 
-`achievement` requires a `text` option: its first word is the title and the remaining words are the description (400 characters maximum). Example: `@sirmagick achievement TouchGrass Finally went outside.` Add an image attachment or an image URL at the end. The output is a 1200x650 card; `chanpost` produces a fictional 1200x820 screenshot with doubles/trips-or-higher post IDs and never connects to an imageboard. `hornijail` places the image behind three perspective-aligned window panes and returns the opaque template dimensions. Other new modes keep the input dimensions and alpha. Random mode skips `achievement` because it needs user text.
+`achievement` requires a `text` option: its first word is the title and the remaining words are the description (400 characters maximum). Example: `@sirmagick achievement TouchGrass Finally went outside.` Add an image attachment or an image URL at the end. The output is a 1200x650 card; `chanpost` produces a fictional 1200x820 screenshot with doubles/trips-or-higher post IDs and never connects to an imageboard. `hornijail` places the image behind three perspective-aligned window panes and returns the opaque template dimensions. Other new modes keep the input dimensions and alpha. Random mode skips `achievement` and the three metal-cover modes because they need user text.
 
 The experimental `comic` and `anime` photo filters have been removed; character redraws need a separate generative model. `fatmagic` smoothly widens detected torsos when reliable shoulder/hip points exist; otherwise only the face is changed. `censorface` is a stylized blur and is not a guarantee of anonymization. Face masks and face transformations require a detected face; heavy edits can prevent detection on the next request.
 
@@ -183,4 +188,8 @@ SirMagick's own code is MIT licensed. The image includes `/app/LICENSE`,
 `/app/THIRD_PARTY_NOTICES.md`, and `/app/licenses/Apache-2.0.txt`.
 Dependencies, models, and operating system packages retain their own licenses.
 
-All Discord slash commands use the `sm_` prefix: `/sm_blockface`, `/sm_halo`, `/sm_random`, `/sm_help`, and every other effect. Type `/sm_` to filter the command list. The tables list effect names; add `sm_` for slash commands. Mention commands retain short names, such as `@sirmagick halo`. After rebuilding and restarting, synchronization replaces the old unprefixed slash commands globally and in allowed guilds.
+All Discord slash commands use the `sm_` prefix: `/sm_blockface`, `/sm_halo`, `/sm_random`, `/sm_help`, and every other effect. Type `/sm_` to filter the command list. The tables list effect names; add `sm_` for slash commands. Mention commands retain short names, such as `@sirmagick halo`. After rebuilding and restarting, commands are published globally only. Once global registration succeeds, the bot removes legacy guild-specific copies in joined servers to prevent duplicate entries. If global registration fails, existing guild commands are retained.
+
+### Metal album covers
+
+`metalcover`, `blackmetalcover`, and `deathmetalcover` require text in the form `BAND NAME | Album title`. Example: `@sirmagick blackmetalcover VOID SEPULCHER | Beneath the Last Sun`. Slash commands have a required `text` option. Band names allow 48 characters; album titles allow 100. The three logo styles are angular thorns, branching roots, and dense jagged lettering. Metalcover is dark photographic monochrome, Blackmetalcover is harsh xerox-style black and white, and Deathmetalcover is deep red and charcoal. The three logo fonts are Metal Lord (Metalcover), Dystopian Canticle (Blackmetalcover), and Art Dystopia (Deathmetalcover). They produce opaque 900x900 covers with grain, scratches, and dark edges, using CPU only and no face detection. The input is center-cropped to a square.

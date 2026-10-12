@@ -16,7 +16,7 @@ from test_core import fixture_directory
 
 
 class BotTests(unittest.IsolatedAsyncioTestCase):
-    async def test_guild_commands_sync_once_and_respect_server_filter(self):
+    async def test_guild_duplicates_are_removed_once_and_global_commands_survive(self):
         from sirmagick.discord_bot import MagickBot
         from sirmagick.effects import EFFECTS
         bot = MagickBot(BotConfig(token="unused", guild_ids=frozenset({1})))
@@ -26,12 +26,16 @@ class BotTests(unittest.IsolatedAsyncioTestCase):
         bot.tree.add_command(discord.app_commands.Command(name="help", description="Legacy help",
             callback=bot.tree.get_command("sm_help").callback), guild=guild)
         try:
+            await bot.sync_commands()
+            bot.tree.sync.reset_mock()
+            bot.tree.sync.return_value = []
             with self.assertLogs("sirmagick.discord_bot", level="INFO"):
                 await asyncio.gather(bot.sync_guild_commands(guild), bot.sync_guild_commands(guild))
             bot.tree.sync.assert_awaited_once_with(guild=guild)
-            self.assertEqual({cmd.name for cmd in bot.tree.get_commands(guild=guild)}, {"sm_"+name for name in EFFECTS | {"help"}})
+            self.assertEqual(bot.tree.get_commands(guild=guild), [])
+            self.assertEqual({cmd.name for cmd in bot.tree.get_commands()}, {"sm_"+name for name in EFFECTS | {"help"}})
             await bot.sync_guild_commands(SimpleNamespace(id=2, name="excluded"))
-            self.assertEqual(bot.tree.sync.await_count, 1)
+            self.assertEqual(bot.tree.sync.await_count, 2)
         finally:
             await bot.close()
 
@@ -66,6 +70,9 @@ class BotTests(unittest.IsolatedAsyncioTestCase):
             with self.assertLogs("sirmagick.discord_bot", level="WARNING") as logs:
                 await bot.sync_commands()
             self.assertIn("HTTP 403, Discord code 50001", logs.output[0])
+            before = bot.tree.sync.await_count
+            await bot.sync_guild_commands(SimpleNamespace(id=1,name='test'))
+            self.assertEqual(bot.tree.sync.await_count,before)
         finally:
             await bot.close()
 

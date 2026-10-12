@@ -11,9 +11,15 @@
 !sirmagick/
 !sirmagick/*.py
 !sirmagick/assets/
-!sirmagick/assets/shades.png
-!sirmagick/assets/blunt.png
-!sirmagick/assets/anime.rays.jpg
-!sirmagick/assets/wasted.gta.jpg
-!sirmagick/assets/youdied.souls.jpg
-!sirmagick/assets/horni.jail.jpg
+!sirmagick/assets/img/
+!sirmagick/assets/img/shades.png
+!sirmagick/assets/img/blunt.png
+!sirmagick/assets/img/anime.rays.jpg
+!sirmagick/assets/img/wasted.gta.jpg
+!sirmagick/assets/img/youdied.souls.jpg
+!sirmagick/assets/img/horni.jail.jpg
+!sirmagick/assets/font/
+!sirmagick/assets/font/Dystopian-Canticle-Regular.otf
+!sirmagick/assets/font/license_Dystopian-Canticle.txt
+!sirmagick/assets/font/ArtDystopia.ttf
+!sirmagick/assets/font/Metal Lord.otf

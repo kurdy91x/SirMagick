@@ -13,7 +13,7 @@ from sirmagick.detection import Detector
 from sirmagick.effects import TRANSFORMERS,FACE_MASKS,MEMES,STYLIZED,FACE_EFFECTS,apply_effect
 from sirmagick.images import image_paths,load_image
 
-MODES = tuple(sorted(TRANSFORMERS|FACE_MASKS|MEMES|STYLIZED|{'surveillance'}))
+MODES = tuple(sorted(TRANSFORMERS|FACE_MASKS|MEMES|STYLIZED|{'surveillance','metalcover','blackmetalcover','deathmetalcover'}))
 ACHIEVEMENT_TEXT = 'TouchGrass Finally went outside. The graphics were surprisingly good.'
 
 
@@ -67,10 +67,11 @@ def main():
                 error = None
                 start = perf_counter()
                 try:
-                    first = apply_effect(image,detection if mode in FACE_EFFECTS else None,mode,text=ACHIEVEMENT_TEXT)
+                    value = 'VOID SEPULCHER | Beneath the Last Sun' if mode.endswith('metalcover') else ACHIEVEMENT_TEXT
+                    first = apply_effect(image,detection if mode in FACE_EFFECTS else None,mode,text=value)
                     first.save(output/f'{mode}--{number}--1x.png')
                     second_detection = detector.detect(first) if mode in FACE_EFFECTS else None
-                    second = apply_effect(first,second_detection,mode,text=ACHIEVEMENT_TEXT)
+                    second = apply_effect(first,second_detection,mode,text=value)
                 except Exception as exc:
                     error = f'{type(exc).__name__}: {exc}'
                 filename = f'{mode}--{number}--comparison.jpg'

@@ -23,9 +23,11 @@ COPY LICENSE THIRD_PARTY_NOTICES.md ./
 COPY licenses/Apache-2.0.txt ./licenses/Apache-2.0.txt
 # Copy source and exactly the allowlisted effect overlays; never private previews.
 COPY sirmagick/*.py ./sirmagick/
-COPY sirmagick/assets/shades.png sirmagick/assets/blunt.png ./sirmagick/assets/
-COPY sirmagick/assets/anime.rays.jpg sirmagick/assets/wasted.gta.jpg sirmagick/assets/youdied.souls.jpg ./sirmagick/assets/
-COPY sirmagick/assets/horni.jail.jpg ./sirmagick/assets/
+COPY sirmagick/assets/img/shades.png sirmagick/assets/img/blunt.png ./sirmagick/assets/img/
+COPY sirmagick/assets/img/anime.rays.jpg sirmagick/assets/img/wasted.gta.jpg sirmagick/assets/img/youdied.souls.jpg ./sirmagick/assets/img/
+COPY sirmagick/assets/img/horni.jail.jpg ./sirmagick/assets/img/
+COPY sirmagick/assets/font/Dystopian-Canticle-Regular.otf sirmagick/assets/font/license_Dystopian-Canticle.txt ./sirmagick/assets/font/
+COPY ["sirmagick/assets/font/ArtDystopia.ttf", "sirmagick/assets/font/Metal Lord.otf", "./sirmagick/assets/font/"]
 RUN python -m pip install . \
     && python -c "import shutil; shutil.rmtree('/app/build', ignore_errors=True)" \
     && python -m sirmagick download-models --models /app/models \

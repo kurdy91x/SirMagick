@@ -56,4 +56,8 @@ complete license audit of a particular published image.
 
 ## Supplied meme overlays
 
-`sirmagick/assets/anime.rays.jpg`, `wasted.gta.jpg`, `youdied.souls.jpg`, and `horni.jail.jpg` are maintainer-supplied reference graphics. The game wordmarks refer to their respective third-party games; the MIT license on application code does not grant rights to third-party artwork or trademarks. Original sources and usage rights for these supplied graphics have not been independently verified. `chanpost` and `achievement` use code-drawn layouts, not remote services or screenshots shipped as templates.
+`sirmagick/assets/img/anime.rays.jpg`, `wasted.gta.jpg`, `youdied.souls.jpg`, and `horni.jail.jpg` are maintainer-supplied reference graphics. The game wordmarks refer to their respective third-party games; the MIT license on application code does not grant rights to third-party artwork or trademarks. Original sources and usage rights for these supplied graphics have not been independently verified. `chanpost` and `achievement` use code-drawn layouts, not remote services or screenshots shipped as templates.
+
+## Bundled font
+
+Dystopian Canticle by Scapholene is supplied unmodified in `sirmagick/assets/font/Dystopian-Canticle-Regular.otf` under SIL Open Font License 1.1. Its original copyright and license text is bundled alongside it in `license_Dystopian-Canticle.txt`. Rendered lettering can be distressed or decorated; the font binary is not modified. Art Dystopia (https://www.1001fonts.com/art-dystopia-font.html) and Metal Lord (https://www.1001fonts.com/metal-lord-font.html) are identified as Public Domain by their respective source pages. The linked terms (https://www.1001fonts.com/licenses/public-domain.html) allow use, modification, and redistribution. Original font ZIP archives are not packaged or tracked.

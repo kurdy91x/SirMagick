@@ -17,7 +17,7 @@ ASSETS = ('anime.rays.jpg','wasted.gta.jpg','youdied.souls.jpg')
 
 @lru_cache(maxsize=3)
 def _asset(name):
-    with Image.open(Path(__file__).parent/'assets'/name) as source:
+    with Image.open(Path(__file__).parent/'assets'/'img'/name) as source:
         pixels = np.array(source.convert('RGBA'))
     # The supplied JPGs have white backgrounds, not actual alpha channels.
     whiteness = pixels[...,:3].min(axis=-1).astype(np.float32)
@@ -109,7 +109,7 @@ def _achievement(image,value):
 def _hornijail(image):
     # This supplied JPEG has white window panes instead of an alpha channel.
     # Only the three explicit pane polygons are replaced; white lettering stays.
-    with Image.open(Path(__file__).parent/'assets'/'horni.jail.jpg') as asset:
+    with Image.open(Path(__file__).parent/'assets'/'img'/'horni.jail.jpg') as asset:
         frame = np.array(asset.convert('RGBA'))
     h,w = frame.shape[:2]
     scale = np.array([w/932,h/810],np.float32)

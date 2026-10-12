@@ -13,6 +13,7 @@ from .bot_commands import find_image, parse_command
 from .downloads import create_download_session, download_image
 from .worker import ProcessWorker
 from .effects import DESCRIPTIONS
+from .effect_options import TEXT_VALIDATORS
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.INFO)
@@ -26,6 +27,7 @@ HELP = (
     "Upload an image or provide a public url; otherwise use the latest channel image. "
     "All detected faces are processed; GIFs use the first frame. "
     "Achievement requires text: first word = title, rest = description. "
+    "Metal covers require text: BAND NAME | Album title. "
     "Mention commands also work: `@SirMagick blockface`."
 )
 
@@ -79,6 +81,7 @@ class MagickBot(discord.Client):
         self.tree.on_error = self.slash_error
         self.guild_sync_attempted = set()
         self.guild_sync_lock = asyncio.Lock()
+        self.global_commands_synced = False
         self.register_commands()
 
     def allowed(self, guild, channel):
@@ -99,10 +102,9 @@ class MagickBot(discord.Client):
                 if image and url:
                     await interaction.response.send_message("Provide either an image or a URL, not both.", ephemeral=True)
                     return
-                if effect == 'achievement':
-                    from .effect_options import achievement_parts
+                if effect in TEXT_VALIDATORS:
                     try:
-                        achievement_parts(value)
+                        TEXT_VALIDATORS[effect](value)
                     except ValueError as exc:
                         await interaction.response.send_message(str(exc),ephemeral=True)
                         return
@@ -114,8 +116,8 @@ class MagickBot(discord.Client):
             async def callback(interaction: discord.Interaction,
                                image: discord.Attachment | None = None,url: str | None = None):
                 await dispatch(interaction,image,url)
-            if effect == 'achievement':
-                @discord.app_commands.describe(text="First word = achievement title; remaining words = description",
+            if effect in TEXT_VALIDATORS:
+                @discord.app_commands.describe(text="Achievement: first word = title; metal covers: BAND NAME | Album title",
                                                image="Upload an image; otherwise use the latest channel image",
                                                url="Alternatively, provide a public image URL")
                 async def achievement_callback(interaction: discord.Interaction,text: str,
@@ -147,11 +149,13 @@ class MagickBot(discord.Client):
         self.consumer = asyncio.create_task(self.consume())
 
     async def sync_commands(self):
+        self.global_commands_synced = False
         LOGGER.info("Registering %d slash commands with Discord (Application ID: %s) …",
                     len(self.tree.get_commands()), self.application_id)
         try:
             async with asyncio.timeout(30):
                 commands = await self.tree.sync()
+            self.global_commands_synced = True
             LOGGER.info("Discord confirmed %d global slash commands: %s", len(commands),
                         ", ".join("/" + command.name for command in commands))
         except discord.HTTPException as exc:
@@ -161,19 +165,19 @@ class MagickBot(discord.Client):
             LOGGER.warning("Slash registration: no response within 30 seconds.")
 
     async def sync_guild_commands(self, guild):
-        if self.config.guild_ids and guild.id not in self.config.guild_ids:
+        # Never remove working guild commands if global registration failed.
+        if not self.global_commands_synced:
             return
         async with self.guild_sync_lock:
             if guild.id in self.guild_sync_attempted:
                 return
-            self.guild_sync_attempted.add(guild.id)
-            # Replace the entire guild catalog, including any legacy names.
+            # Empty the legacy guild catalog; publish only global commands.
             self.tree.clear_commands(guild=guild)
-            self.tree.copy_global_to(guild=guild)
             try:
                 async with asyncio.timeout(30):
                     commands = await self.tree.sync(guild=guild)
-                LOGGER.info("Discord confirmed %d slash commands directly in guild %s (%s).",
+                self.guild_sync_attempted.add(guild.id)
+                LOGGER.info("Legacy guild command cleanup confirmed: %d remaining in guild %s (%s); using global commands.",
                             len(commands), guild.name, guild.id)
             except discord.HTTPException as exc:
                 LOGGER.warning("Guild slash registration failed for %s: HTTP %s, Discord code %s. "

@@ -17,7 +17,7 @@ include-package-data = false
 dependencies = {file = ["requirements.txt"]}
 
 [tool.setuptools.package-data]
-sirmagick = ["assets/shades.png", "assets/blunt.png", "assets/anime.rays.jpg", "assets/wasted.gta.jpg", "assets/youdied.souls.jpg", "assets/horni.jail.jpg"]
+sirmagick = ["assets/img/shades.png", "assets/img/blunt.png", "assets/img/anime.rays.jpg", "assets/img/wasted.gta.jpg", "assets/img/youdied.souls.jpg", "assets/img/horni.jail.jpg", "assets/font/Dystopian-Canticle-Regular.otf", "assets/font/license_Dystopian-Canticle.txt", "assets/font/ArtDystopia.ttf", "assets/font/Metal Lord.otf"]
 
 [project.scripts]
 sirmagick = "sirmagick.cli:main"

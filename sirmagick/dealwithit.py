@@ -9,7 +9,7 @@ from PIL import Image
 
 @lru_cache(maxsize=2)
 def _asset(name):
-    with Image.open(Path(__file__).parent / 'assets' / name) as image:
+    with Image.open(Path(__file__).parent / 'assets' / 'img' / name) as image:
         return np.asarray(image.convert('RGBA')).copy()
 
 

@@ -1,2 +1,2 @@
-"""Exact application image allowlist; personal test images are never packaged."""
-ALLOWED_ASSETS = ('shades.png','blunt.png','anime.rays.jpg','wasted.gta.jpg','youdied.souls.jpg','horni.jail.jpg')
+"""Exact packaged image paths relative to assets; private photos are excluded."""
+ALLOWED_ASSETS = ('img/shades.png', 'img/blunt.png', 'img/anime.rays.jpg', 'img/wasted.gta.jpg', 'img/youdied.souls.jpg', 'img/horni.jail.jpg')

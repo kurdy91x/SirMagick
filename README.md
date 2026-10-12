@@ -44,6 +44,7 @@ For slash commands, type `/sm_` and choose an effect, such as `/sm_halo` or `/sm
 | Surveillance HUD | `surveillance` |
 | Meme layouts | `combobreaker`, `youdied`, `wasted`, `animerays`, `achievement`, `chanpost`, `hornijail` |
 | Meme feeds | `hodl`, `buythedip`, `kaliyuga` |
+| Metal album covers | `metalcover`, `blackmetalcover`, `deathmetalcover` |
 | Photo styles | `prismglow` |
 
 The three Vortex modes render in 96-row strips on a working canvas capped at 1600 pixels on its longest side, then restore the original dimensions and alpha. This bounds their temporary rendering memory; large outputs may be softer than full-resolution rendering.
@@ -117,11 +118,11 @@ Depth effects work without faces or extra models. `extrude` builds colored sidew
 
 Face fantasy effects require detected faces. `halo` adds a glowing golden ring, `devilhorns` adds glossy curved horns; both follow head size and eye-line rotation. `vortexcolumns` tiles all detected faces onto twisting cylindrical streams with surface shading. Repeated processing detects faces again and can fail if the result is too distorted. Run `python tools/preview_face_fantasy.py` for private comparisons under `examples/headgear/` and `examples/vortexcolumns/`.
 
-All Discord slash commands use the `sm_` prefix: `/sm_blockface`, `/sm_halo`, `/sm_random`, `/sm_help`, and every other effect. Type `/sm_` to filter the command list. The tables list effect names; add `sm_` for slash commands. Mention commands retain short names, such as `@sirmagick halo`. After rebuilding and restarting, synchronization replaces the old unprefixed slash commands globally and in allowed guilds.
+All Discord slash commands use the `sm_` prefix: `/sm_blockface`, `/sm_halo`, `/sm_random`, `/sm_help`, and every other effect. Type `/sm_` to filter the command list. The tables list effect names; add `sm_` for slash commands. Mention commands retain short names, such as `@sirmagick halo`. After rebuilding and restarting, commands are published globally only. Once global registration succeeds, the bot removes legacy guild-specific copies in joined servers to prevent duplicate entries. If global registration fails, existing guild commands are retained.
 
 ## New effect review batch
 
-Run `python tools/preview_new_effects.py` to generate 24 variants on four inputs under ignored `examples/new-effects/`. Open its `index.html` to filter the flat gallery by effect. Comparisons show original / first pass / second pass, with first-pass PNGs and `report.json` beside them. The input selection includes close portraits and detected torsos. A failed second face detection is displayed rather than bypassed. Use `--modes fatmagic redeyes` to regenerate only selected variants.
+Run `python tools/preview_new_effects.py` to generate 27 variants on four inputs under ignored `examples/new-effects/`. Open its `index.html` to filter the flat gallery by effect. Comparisons show original / first pass / second pass, with first-pass PNGs and `report.json` beside them. The input selection includes close portraits and detected torsos. A failed second face detection is displayed rather than bypassed. Use `--modes fatmagic redeyes` to regenerate only selected variants.
 
 Achievement text is required: `/sm_achievement text:TouchGrass Finally went outside.` or `@sirmagick achievement TouchGrass Finally went outside.` The first word becomes the title, the rest the description; text is limited to 400 characters. Mention commands allow an image URL after the description. Locally: `python -m sirmagick achievement INPUT --text "TouchGrass Finally went outside." --output output-achievement`. The worker receives the same text through the shared queue. Achievement produces a 1200x650 Steam-style card; Chanpost produces a fictional 1200x820 imageboard screenshot with random comments and repeated-digit IDs, entirely offline. Random mode excludes Achievement because it requires text.
 
@@ -130,3 +131,11 @@ Hornijail uses the supplied 932x810 meme template and inserts the image behind i
 Supplied JPG wordmarks and action rays are composited with white removed; Anime Rays is stretched to the input aspect ratio. Only exact filenames in `sirmagick/asset_manifest.py` may be packaged. Private input images and comparison renders remain excluded from Git and Docker.
 
 Prismglow uses float32 buffers, a reduced-resolution bloom pass, and local bokeh patches on a 900-pixel working canvas to limit CPU and memory use. Worker logs identify decode, detection, render, and encode stages when diagnosing processing timeouts.
+
+## Metal album covers
+
+Use `/sm_metalcover text:VOID SEPULCHER | Beneath the Last Sun` or `@sirmagick metalcover VOID SEPULCHER | Beneath the Last Sun`. Text before `|` is the band name (up to 48 characters), text after it is the album title (up to 100 characters). A trailing image URL is supported for mentions. CLI: `python -m sirmagick metalcover INPUT --text "VOID SEPULCHER | Beneath the Last Sun" --output output-metalcover`.
+
+`metalcover` draws angular thorns, `blackmetalcover` draws branching roots, and `deathmetalcover` draws compact jagged extensions. The three logo fonts are Metal Lord (Metalcover), Dystopian Canticle (Blackmetalcover), and Art Dystopia (Deathmetalcover). Metalcover keeps a dark photographic monochrome look; Blackmetalcover uses harsh xerox-style black and white; Deathmetalcover uses deep red and charcoal. Covers use square center crops, grain, vignette, and scratches. They produce opaque 900x900 covers on CPU without detection or additional models. Long text is fitted to the available space. Random mode excludes these commands because they require text. Private previews: `python tools/preview_new_effects.py --modes metalcover blackmetalcover deathmetalcover`.
+
+Image overlays live in `sirmagick/assets/img/`; reviewed font binaries and their license notices live in `sirmagick/assets/font/`. Original font ZIP archives are excluded from Git and Docker. Art Dystopia and Metal Lord are listed as Public Domain by their source pages; Dystopian Canticle uses SIL OFL 1.1. Per-font sources and license information are documented in `THIRD_PARTY_NOTICES.md`; the original SIL OFL license is bundled with Dystopian Canticle.

@@ -51,8 +51,9 @@ def main(argv=None) -> int:
         effect_parser.add_argument("--models", type=Path, default=Path("models"))
         effect_parser.add_argument("--max-side", type=int, default=1024)
         effect_parser.add_argument("--max-people", type=int, default=20)
-        if name == 'achievement':
-            effect_parser.add_argument('--text',required=True,help='First word is the title; remaining words are the description')
+        from .effect_options import TEXT_VALIDATORS
+        if name in TEXT_VALIDATORS:
+            effect_parser.add_argument('--text',required=True,help='Achievement: title description; metal covers: BAND NAME | Album title')
         effect_parser.set_defaults(require="face")
     commands.add_parser("bot", help="Start the Discord bot (.env)")
     args = parser.parse_args(argv)
