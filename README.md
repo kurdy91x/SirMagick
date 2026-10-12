@@ -4,7 +4,7 @@ A CPU-only Discord image bot with face distortions, trippy transformations, comp
 
 ## Run with Docker
 
-Image: `kurdy/sirmagick:latest` (Linux/amd64). Use [compose.yaml](compose.yaml), set your own `DISCORD_TOKEN` through `.env`, your shell, or Portainer, then run:
+Image: `kurdy/sirmagick:latest` (Linux/amd64). Use [compose.yaml](https://github.com/kurdy91x/SirMagick/blob/main/compose.yaml), set your own `DISCORD_TOKEN` through `.env`, your shell, or Portainer, then run:
 
 ```sh
 docker compose pull
@@ -12,7 +12,7 @@ docker compose up -d
 docker compose logs -f --tail=50
 ```
 
-No published ports are required. The container runs as a non-root user. Setup, building, publishing, and updates: [DOCKER.md](DOCKER.md). Docker Hub description: [DOCKERHUB.md](DOCKERHUB.md).
+No published ports are required. The container runs as a non-root user. Setup, building, publishing, and updates: [DOCKER.md](https://github.com/kurdy91x/SirMagick/blob/main/DOCKER.md). Docker Hub description: [DOCKERHUB.md](https://github.com/kurdy91x/SirMagick/blob/main/DOCKERHUB.md).
 
 ## Discord commands
 
@@ -64,7 +64,7 @@ The three Vortex modes render in 96-row strips on a working canvas capped at 160
 
 The bot uses an attachment on the command or searches up to 50 earlier channel messages for an image. Outputs from the bot can be processed again. Each new face request detects landmarks again; sufficiently distorted faces may no longer be recognized. All detected faces are processed. GIFs use only their first frame. Direct messages are ignored.
 
-Slash equivalents are registered at startup. Mention commands work independently of whether Discord displays the slash list. Bot replies, help text, and command descriptions are in English. Discord setup and permissions: [DISCORD.md](DISCORD.md).
+Slash equivalents are registered at startup. Mention commands work independently of whether Discord displays the slash list. Bot replies, help text, and command descriptions are in English. Discord setup and permissions: [DISCORD.md](https://github.com/kurdy91x/SirMagick/blob/main/DISCORD.md).
 
 ## Behavior and limits
 
@@ -74,7 +74,7 @@ Input limits: 25 MiB and 24 million pixels. Ultrawide also checks the resulting 
 
 Effects have fixed strengths. `fatmagic` uses approximate torso landmarks rather than a precise person mask, so it can also stretch nearby background. Trippy and Euler effects work without a face or detection models. Complex-coordinate effects reflect samples outside the image and regularize singularities. Anime decals follow facial landmarks and can accumulate on repeated application.
 
-Settings and defaults are documented in [.env.example](.env.example) and [compose.yaml](compose.yaml). Private images and tokens are never bundled in the build context: `.dockerignore` allows only the required source, build/license files, and the six explicit effect overlays. A build-time audit rejects all other image files and `.env` in the application directories.
+Settings and defaults are documented in [.env.example](https://github.com/kurdy91x/SirMagick/blob/main/.env.example) and [compose.yaml](https://github.com/kurdy91x/SirMagick/blob/main/compose.yaml). Private images and tokens are never bundled in the build context: `.dockerignore` allows only the required source, build/license files, and the six explicit effect overlays. A build-time audit rejects all other image files and `.env` in the application directories.
 
 ## Local development
 
@@ -107,8 +107,8 @@ Each detected image gets separate three-column comparisons. `batch-report.json` 
 
 Source: [GitHub](https://github.com/kurdy91x/SirMagick).
 
-SirMagick's own code is licensed under the [MIT License](LICENSE).
-Dependencies and models retain their own licenses; see [third-party notices](THIRD_PARTY_NOTICES.md).
+SirMagick's own code is licensed under the [MIT License](https://github.com/kurdy91x/SirMagick/blob/main/LICENSE).
+Dependencies and models retain their own licenses; see [third-party notices](https://github.com/kurdy91x/SirMagick/blob/main/THIRD_PARTY_NOTICES.md).
 
 Generate Retro and fisheye comparisons with `python tools/preview_retro.py`. Private three-column comparisons are saved directly under `examples/retro-new/`. To check only the stronger CRT effect on four varied images, use `python tools/preview_retro.py --modes crt --limit 4`.
 

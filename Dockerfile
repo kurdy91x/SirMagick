@@ -1,6 +1,6 @@
 FROM python:3.12-slim-bookworm
 LABEL org.opencontainers.image.licenses="MIT" \
-    org.opencontainers.image.source="https://gitlab.kurdy.de/kurdy/sirmagick"
+    org.opencontainers.image.source="https://github.com/kurdy91x/SirMagick"
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
