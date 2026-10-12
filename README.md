@@ -105,7 +105,7 @@ To compare the rebuilt anime effects across your private test images:
 
 Each detected image gets separate three-column comparisons. `batch-report.json` records missing detections and second-pass failures; these do not stop the batch.
 
-Source: [GitLab](https://gitlab.kurdy.de/kurdy/sirmagick).
+Source: [GitHub](https://github.com/kurdy91x/SirMagick).
 
 SirMagick's own code is licensed under the [MIT License](LICENSE).
 Dependencies and models retain their own licenses; see [third-party notices](THIRD_PARTY_NOTICES.md).
