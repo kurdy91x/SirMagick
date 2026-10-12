@@ -13,9 +13,9 @@ MODES = ('prismglow',)
 def apply_effect(image,mode,seed=None):
     if mode not in MODES:
         raise ValueError('Unknown stylization.')
-    canvas = working(image,1200)
+    canvas = working(image,900)
     rgb = np.asarray(canvas)[...,:3].copy()
-    alpha = np.asarray(canvas)[...,3:4]/255
+    alpha = np.asarray(canvas)[...,3:4].astype(np.float32)/255
     rgb = np.uint8(rgb*alpha)
     h,w = rgb.shape[:2]
     rng = np.random.default_rng(secrets.randbits(64) if seed is None else seed)
@@ -23,9 +23,12 @@ def apply_effect(image,mode,seed=None):
     yy,xx = np.mgrid[:h,:w].astype(np.float32)
     x,y = xx/max(1,w-1),yy/max(1,h-1)
     light = saturated @ np.array([.2126,.7152,.0722],np.float32)
-    grade = np.array([1.15,.98,.83])*saturated
-    grade += (1-light)[...,None]*np.array([0,.07,.11])
-    bloom = cv2.GaussianBlur(np.clip(grade-.65,0,1),(0,0),max(1,min(w,h)*.018))
+    grade = np.array([1.15,.98,.83],np.float32)*saturated
+    grade += (1-light)[...,None]*np.array([0,.07,.11],np.float32)
+    # Broad bloom needs no full-resolution Gaussian kernel.
+    small = (max(1,round(w/4)),max(1,round(h/4)))
+    bright = cv2.resize(np.clip(grade-.65,0,1),small,interpolation=cv2.INTER_AREA)
+    bloom = cv2.resize(cv2.GaussianBlur(bright,(0,0),max(.5,min(w,h)*.018/4)),(w,h))
     output = grade+bloom*.8
     edge = np.clip(np.abs(x-.5)*2,0,1)
     # Local soft double exposures imitate refracting glass, leaving the center clear.
@@ -39,13 +42,19 @@ def apply_effect(image,mode,seed=None):
         cx = float(rng.uniform(-.1,.22) if index%2 else rng.uniform(.78,1.1))
         cy = float(rng.uniform(-.1,1.1))
         radius = float(rng.uniform(.025,.13))
-        distance = np.hypot((x-cx)*w/min(w,h),(y-cy)*h/min(w,h))
+        # A bokeh disc only touches a small patch, not the entire frame.
+        reach = radius*1.8*min(w,h)
+        x0,x1 = max(0,int(cx*w-reach)),min(w,int(cx*w+reach)+1)
+        y0,y1 = max(0,int(cy*h-reach)),min(h,int(cy*h+reach)+1)
+        if x0>=x1 or y0>=y1:
+            continue
+        distance = np.hypot((x[y0:y1,x0:x1]-cx)*w/min(w,h),(y[y0:y1,x0:x1]-cy)*h/min(w,h))
         disc = np.clip((radius-distance)/max(.004,radius*.22),0,1)*.22
         ring = np.exp(-((distance-radius)/(radius*.10+.002))**2)*.12
-        color = np.array([1.,.45,.08]) if index%2 else np.array([.05,.8,1.])
-        output += color*(disc+ring)[...,None]
+        color = np.array([1.,.45,.08] if index%2 else [.05,.8,1.],np.float32)
+        output[y0:y1,x0:x1] += color*(disc+ring)[...,None]
     warm = np.exp(-((x-.98)/.19)**2)*(.4+.2*np.sin(y*6))
     cool = np.exp(-((x-.02)/.15)**2)*.30
-    output += warm[...,None]*np.array([.7,.15,.01])+cool[...,None]*np.array([.02,.4,.5])
+    output += warm[...,None]*np.array([.7,.15,.01],np.float32)+cool[...,None]*np.array([.02,.4,.5],np.float32)
     result = Image.fromarray(np.uint8(np.clip(output*255,0,255))).convert('RGBA')
     return restore(result,image)
