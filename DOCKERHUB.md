@@ -75,7 +75,7 @@ Upload an image to a channel and mention the bot:
 | `angry` | Adds an anime anger symbol |
 | `animerays` | Stretch the supplied anime action rays over the image |
 | `bigmouth` | Enlarges the mouth |
-| `blackmetalcover` | Monochrome album cover with a branching root logo; text: BAND NAME &#124; Album title |
+| `blackmetalcover` | Monochrome album cover with a branching root logo; text: TITLE subtitle text |
 | `blockface` | Shrinks the inner face and stretches the surrounding strip of skin |
 | `blush` | Adds textured cheek tint and small anime hatch marks |
 | `buythedip` | A collapsing red chart and irrationally optimistic Bitcoin slogans |
@@ -88,7 +88,7 @@ Upload an image to a channel and mention the bot:
 | `complexsquare` | Folds image coordinates using a complex square |
 | `crt` | Curved retro monitor, scanlines, and color fringes (Retro) |
 | `dealwithit` | Pixel sunglasses and a blunt aligned to each detected face |
-| `deathmetalcover` | Deep red and charcoal album cover with a dense jagged logo; text: BAND NAME &#124; Album title |
+| `deathmetalcover` | Deep red and charcoal album cover with a dense jagged logo; text: TITLE subtitle text |
 | `deepfry` | Adds exaggerated colors, noise, JPEG artifacts, and random stickers |
 | `devilhorns` | Glossy curved horns aligned with each head |
 | `droste` | Repeats the image in a logarithmic spiral |
@@ -118,7 +118,7 @@ Upload an image to a channel and mention the bot:
 | `logpolar` | Unwraps circles into straight bands |
 | `longface` | Stretch the face into a long narrow oval |
 | `meltface` | Let facial features melt downward |
-| `metalcover` | Monochrome album cover with an angular thorn logo; text: BAND NAME &#124; Album title |
+| `metalcover` | Monochrome album cover with an angular thorn logo; text: TITLE subtitle text |
 | `mouthvortex` | Twisting cylindrical streams covered in repeated mouths |
 | `newton` | Image-colored Newton fractal basins (Fractal) |
 | `nightvision` | Green low-light contrast, grain, and scanlines |
@@ -192,4 +192,4 @@ All Discord slash commands use the `sm_` prefix: `/sm_blockface`, `/sm_halo`, `/
 
 ### Metal album covers
 
-`metalcover`, `blackmetalcover`, and `deathmetalcover` require text in the form `BAND NAME | Album title`. Example: `@sirmagick blackmetalcover VOID SEPULCHER | Beneath the Last Sun`. Slash commands have a required `text` option. Band names allow 48 characters; album titles allow 100. The three logo styles are angular thorns, branching roots, and dense jagged lettering. Metalcover is dark photographic monochrome, Blackmetalcover is harsh xerox-style black and white, and Deathmetalcover is deep red and charcoal. The three logo fonts are Metal Lord (Metalcover), Dystopian Canticle (Blackmetalcover), and Art Dystopia (Deathmetalcover). They produce opaque 900x900 covers with grain, scratches, and dark edges, using CPU only and no face detection. The input is center-cropped to a square.
+`metalcover`, `blackmetalcover`, and `deathmetalcover` require text in the form `TITLE subtitle text`. Example: `@sirmagick blackmetalcover SEPULCHER Beneath the Last Sun`. Slash commands have a required `text` option. The first word appears as the title at the top (up to 48 characters); the remaining words appear at the bottom (up to 100 characters). No pipe separator is needed. The three logo styles are angular thorns, branching roots, and dense jagged lettering. Metalcover is dark photographic monochrome, Blackmetalcover is harsh xerox-style black and white, and Deathmetalcover is deep red and charcoal. The three logo fonts are Metal Lord (Metalcover), Dystopian Canticle (Blackmetalcover), and Art Dystopia (Deathmetalcover). They produce opaque 900x900 covers with grain, scratches, and dark edges, using CPU only and no face detection. The input is center-cropped to a square.

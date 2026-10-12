@@ -134,7 +134,7 @@ Prismglow uses float32 buffers, a reduced-resolution bloom pass, and local bokeh
 
 ## Metal album covers
 
-Use `/sm_metalcover text:VOID SEPULCHER | Beneath the Last Sun` or `@sirmagick metalcover VOID SEPULCHER | Beneath the Last Sun`. Text before `|` is the band name (up to 48 characters), text after it is the album title (up to 100 characters). A trailing image URL is supported for mentions. CLI: `python -m sirmagick metalcover INPUT --text "VOID SEPULCHER | Beneath the Last Sun" --output output-metalcover`.
+Use `/sm_metalcover text:SEPULCHER Beneath the Last Sun` or `@sirmagick metalcover SEPULCHER Beneath the Last Sun`. The first word is the title at the top (up to 48 characters); the remaining words appear at the bottom (up to 100 characters). No pipe separator is needed. A trailing image URL is supported for mentions. CLI: `python -m sirmagick metalcover INPUT --text "SEPULCHER Beneath the Last Sun" --output output-metalcover`.
 
 `metalcover` draws angular thorns, `blackmetalcover` draws branching roots, and `deathmetalcover` draws compact jagged extensions. The three logo fonts are Metal Lord (Metalcover), Dystopian Canticle (Blackmetalcover), and Art Dystopia (Deathmetalcover). Metalcover keeps a dark photographic monochrome look; Blackmetalcover uses harsh xerox-style black and white; Deathmetalcover uses deep red and charcoal. Covers use square center crops, grain, vignette, and scratches. They produce opaque 900x900 covers on CPU without detection or additional models. Long text is fitted to the available space. Random mode excludes these commands because they require text. Private previews: `python tools/preview_new_effects.py --modes metalcover blackmetalcover deathmetalcover`.
 

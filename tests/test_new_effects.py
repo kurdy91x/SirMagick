@@ -18,9 +18,9 @@ class NewEffectTests(unittest.TestCase):
     def test_metal_cover_text_and_distinct_styles(self):
         from sirmagick.effect_options import metal_parts
         modes = ('metalcover','blackmetalcover','deathmetalcover')
-        value = 'VOID SEPULCHER | Beneath the Last Sun'
-        self.assertEqual(metal_parts(value),['VOID SEPULCHER','Beneath the Last Sun'])
-        for invalid in ('','Band','| Title','Band |','Band | Title | Extra','x'*49+' | Title'):
+        value = 'SEPULCHER Beneath the Last Sun'
+        self.assertEqual(metal_parts(value),['SEPULCHER','Beneath the Last Sun'])
+        for invalid in ('','Band','| Title','Band |','Band | Title | Extra','x'*49+' Title'):
             with self.assertRaises(ValueError):
                 metal_parts(invalid)
         image = Image.new('RGBA',(80,130),(70,90,110,255))
@@ -145,11 +145,11 @@ class AchievementSlashTests(unittest.IsolatedAsyncioTestCase):
             for name in ('metalcover','blackmetalcover','deathmetalcover'):
                 command = bot.tree.get_command('sm_'+name)
                 self.assertTrue(command.to_dict(bot.tree)['options'][0]['required'])
-                await command.callback(interaction,text='VOID SEPULCHER | Last Sun')
+                await command.callback(interaction,text='SEPULCHER Last Sun')
                 message = bot.on_message.call_args.args[0]
-                self.assertEqual(parse_command(message.content,42).text,'VOID SEPULCHER | Last Sun')
+                self.assertEqual(parse_command(message.content,42).text,'SEPULCHER Last Sun')
                 bot.on_message.reset_mock()
-                await command.callback(interaction,text='Missing separator')
+                await command.callback(interaction,text='Missing')
                 bot.on_message.assert_not_awaited()
         finally:
             await bot.close()

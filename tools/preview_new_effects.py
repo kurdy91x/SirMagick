@@ -67,7 +67,7 @@ def main():
                 error = None
                 start = perf_counter()
                 try:
-                    value = 'VOID SEPULCHER | Beneath the Last Sun' if mode.endswith('metalcover') else ACHIEVEMENT_TEXT
+                    value = 'SEPULCHER Beneath the Last Sun' if mode.endswith('metalcover') else ACHIEVEMENT_TEXT
                     first = apply_effect(image,detection if mode in FACE_EFFECTS else None,mode,text=value)
                     first.save(output/f'{mode}--{number}--1x.png')
                     second_detection = detector.detect(first) if mode in FACE_EFFECTS else None

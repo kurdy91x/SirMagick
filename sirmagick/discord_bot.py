@@ -27,7 +27,7 @@ HELP = (
     "Upload an image or provide a public url; otherwise use the latest channel image. "
     "All detected faces are processed; GIFs use the first frame. "
     "Achievement requires text: first word = title, rest = description. "
-    "Metal covers require text: BAND NAME | Album title. "
+    "Metal covers require text: TITLE subtitle text. "
     "Mention commands also work: `@SirMagick blockface`."
 )
 
@@ -117,7 +117,7 @@ class MagickBot(discord.Client):
                                image: discord.Attachment | None = None,url: str | None = None):
                 await dispatch(interaction,image,url)
             if effect in TEXT_VALIDATORS:
-                @discord.app_commands.describe(text="Achievement: first word = title; metal covers: BAND NAME | Album title",
+                @discord.app_commands.describe(text="Achievement: first word = title; metal covers: TITLE subtitle text",
                                                image="Upload an image; otherwise use the latest channel image",
                                                url="Alternatively, provide a public image URL")
                 async def achievement_callback(interaction: discord.Interaction,text: str,
