@@ -36,6 +36,15 @@ For slash commands, type `/sm_` and choose an effect, such as `/sm_halo` or `/sm
 | Cinematic / memes | `thermal`, `nightvision`, `thanos`, `dealwithit` |
 | Neon | `tron` |
 | Dimensional | `rift` |
+| Face fantasy | `halo`, `devilhorns`, `vortexcolumns` |
+| Feature vortex | `eyevortex`, `mouthvortex` |
+| Lens | `fisheye` |
+| Face transformers | `alienface`, `longface`, `goblin`, `giga`, `meltface`, `fatmagic` |
+| Face masks | `censorface`, `censorbar`, `redeyes`, `lasereyes`, `firebreath`, `hellface` |
+| Surveillance HUD | `surveillance` |
+| Meme layouts | `combobreaker`, `youdied`, `wasted`, `animerays`, `achievement`, `chanpost`, `hornijail` |
+| Meme feeds | `hodl`, `buythedip`, `kaliyuga` |
+| Photo styles | `prismglow` |
 
 The three Vortex modes render in 96-row strips on a working canvas capped at 1600 pixels on its longest side, then restore the original dimensions and alpha. This bounds their temporary rendering memory; large outputs may be softer than full-resolution rendering.
 
@@ -43,14 +52,11 @@ The three Vortex modes render in 96-row strips on a working canvas capped at 160
 
 `tron` combines sparse, smooth landmark-aligned facial light segments with simplified contours on hair and clothing. It runs on CPU and preserves output dimensions and alpha. The bot and CLI use the existing detector; images without faces still work with simplified image contours. Preview with `python tools/preview_cinematic.py --modes tron`; private comparisons stay in `examples/cinematic/`.
 
-`thermal` simulates heat-camera colors from brightness (it does not measure temperature). `nightvision` adds green low-light contrast, grain, and scanlines. `thanos` disintegrates the right side into drifting image-colored particles. `dealwithit` places the supplied pixel shades and blunt on every detected face; it requires face detection. The two overlay assets are explicitly packaged in the wheel and Docker image; private test photos remain excluded. Generate private three-column comparisons with `python tools/preview_cinematic.py` under `examples/cinematic/`.
+`thermal` simulates heat-camera colors from brightness (it does not measure temperature). `nightvision` adds green low-light contrast, grain, and scanlines. `thanos` disintegrates the right side into drifting image-colored particles. `dealwithit` places the supplied pixel shades and blunt on every detected face; it requires face detection. The allowlisted overlay assets are explicitly packaged in the wheel and Docker image; private test photos remain excluded. Generate private three-column comparisons with `python tools/preview_cinematic.py` under `examples/cinematic/`.
 
 `numbers` and `letters` render colored digits or uppercase letters on a dark background, varying glyph size and density with image details and brightness. They work without faces and use Pillow's bundled scalable font. Output dimensions and the original alpha mask are preserved; glyph rendering is bounded to a 1600-pixel working canvas. Run `python tools/preview_typography.py` for four private input comparisons and full-size first-pass PNGs together under ignored `examples/typography/`.
-| Face fantasy | `halo`, `devilhorns`, `vortexcolumns` |
-| Feature vortex | `eyevortex`, `mouthvortex` |
 
 `eyevortex` tiles both eyes from every detected face across twisting cylindrical streams; `mouthvortex` uses their mouths. Both keep the same fixed vortex geometry as `vortexcolumns`. Generate private comparisons together under `examples/vortexcolumns/` with `python tools/preview_face_fantasy.py --modes eyevortex mouthvortex`. Second passes may fail if full faces are no longer detectable.
-| Lens | `fisheye` (Trippy) |
 
 
 `random` selects one of the available effects per request and names it in the result. If it selects a face effect and no face is detected, that request fails normally. `uwu` adds cute facial proportions and blush; `blush` adds cheek tint and anime hatch marks while retaining the original facial texture.
@@ -67,7 +73,7 @@ Input limits: 25 MiB and 24 million pixels. Ultrawide also checks the resulting 
 
 Effects have fixed strengths. `fatmagic` uses approximate torso landmarks rather than a precise person mask, so it can also stretch nearby background. Trippy and Euler effects work without a face or detection models. Complex-coordinate effects reflect samples outside the image and regularize singularities. Anime decals follow facial landmarks and can accumulate on repeated application.
 
-Settings and defaults are documented in [.env.example](.env.example) and [compose.yaml](compose.yaml). Private images and tokens are never bundled in the build context: `.dockerignore` allows only the required source, build/license files, and the two explicit shades/blunt overlays. A build-time audit rejects all other image files and `.env` in the application directories.
+Settings and defaults are documented in [.env.example](.env.example) and [compose.yaml](compose.yaml). Private images and tokens are never bundled in the build context: `.dockerignore` allows only the required source, build/license files, and the six explicit effect overlays. A build-time audit rejects all other image files and `.env` in the application directories.
 
 ## Local development
 
@@ -88,7 +94,7 @@ All specific bot effects are also available as local CLI commands; `random` is c
 .venv\Scripts\python.exe -m unittest discover -s tests -q
 ```
 
-Local comparison scripts are in `tools/preview_*.py`. They write original / first pass / second pass comparisons under ignored `examples/` subfolders. Private image assets, examples, outputs, `.env`, models, and virtual environments are excluded from Git. Only the two shades/blunt effect overlays are tracked and packaged. No personal photos are needed by the automated tests.
+Local comparison scripts are in `tools/preview_*.py`. They write original / first pass / second pass comparisons under ignored `examples/` subfolders. Private image assets, examples, outputs, `.env`, models, and virtual environments are excluded from Git. Only the six allowlisted effect overlays are tracked and packaged. No personal photos are needed by the automated tests.
 
 To compare the rebuilt anime effects across your private test images:
 
@@ -112,3 +118,13 @@ Depth effects work without faces or extra models. `extrude` builds colored sidew
 Face fantasy effects require detected faces. `halo` adds a glowing golden ring, `devilhorns` adds glossy curved horns; both follow head size and eye-line rotation. `vortexcolumns` tiles all detected faces onto twisting cylindrical streams with surface shading. Repeated processing detects faces again and can fail if the result is too distorted. Run `python tools/preview_face_fantasy.py` for private comparisons under `examples/headgear/` and `examples/vortexcolumns/`.
 
 All Discord slash commands use the `sm_` prefix: `/sm_blockface`, `/sm_halo`, `/sm_random`, `/sm_help`, and every other effect. Type `/sm_` to filter the command list. The tables list effect names; add `sm_` for slash commands. Mention commands retain short names, such as `@sirmagick halo`. After rebuilding and restarting, synchronization replaces the old unprefixed slash commands globally and in allowed guilds.
+
+## New effect review batch
+
+Run `python tools/preview_new_effects.py` to generate 24 variants on four inputs under ignored `examples/new-effects/`. Open its `index.html` to filter the flat gallery by effect. Comparisons show original / first pass / second pass, with first-pass PNGs and `report.json` beside them. The input selection includes close portraits and detected torsos. A failed second face detection is displayed rather than bypassed. Use `--modes fatmagic redeyes` to regenerate only selected variants.
+
+Achievement text is required: `/sm_achievement text:TouchGrass Finally went outside.` or `@sirmagick achievement TouchGrass Finally went outside.` The first word becomes the title, the rest the description; text is limited to 400 characters. Mention commands allow an image URL after the description. Locally: `python -m sirmagick achievement INPUT --text "TouchGrass Finally went outside." --output output-achievement`. The worker receives the same text through the shared queue. Achievement produces a 1200x650 Steam-style card; Chanpost produces a fictional 1200x820 imageboard screenshot with random comments and repeated-digit IDs, entirely offline. Random mode excludes Achievement because it requires text.
+
+Hornijail uses the supplied 932x810 meme template and inserts the image behind its three window panes. The other new effects preserve dimensions and alpha, using working canvases bounded to 1400 pixels (1200 for Prismglow). They may soften large inputs. The experimental Comic and Anime photo filters have been removed. Generative character redraws would require a separate model. Fatmagic smoothly widens reliable torsos and mildly broadens faces; images without visible shoulder/hip landmarks receive face-only processing. Goblin enlarges the temple areas as a rough ear approximation; ears are not separately detected. The censorship modes are visual effects, not guaranteed anonymization. Red eyes tint the brighter sclera and mask the detected iris; small or closed eyes have limited detail. Firebreath and laser direction are estimated from 2D face points.
+
+Supplied JPG wordmarks and action rays are composited with white removed; Anime Rays is stretched to the input aspect ratio. Only exact filenames in `sirmagick/asset_manifest.py` may be packaged. Private input images and comparison renders remain excluded from Git and Docker.

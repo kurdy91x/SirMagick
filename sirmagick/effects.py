@@ -3,6 +3,29 @@ from importlib import import_module
 import secrets
 
 DESCRIPTIONS = {
+    "hornijail": "Put the image behind the window panes of the horny jail meme",
+    "surveillance": "Face tracking locks, tactical status panels, REC, and UTC timestamp",
+    "alienface": "Long gray alien face with large dark eyes and tiny features",
+    "longface": "Stretch the face into a long narrow oval",
+    "goblin": "Enlarge the nose and mouth and shrink the eyes",
+    "giga": "Exaggerate the jaw width and chin",
+    "meltface": "Let facial features melt downward",
+    "combobreaker": "Add a large C-C-C-COMBOBREAKER wordmark",
+    "youdied": "Darken the scene and add the supplied YOU DIED wordmark",
+    "wasted": "Desaturate the scene and add the supplied wasted wordmark",
+    "animerays": "Stretch the supplied anime action rays over the image",
+    "achievement": "Steam-style achievement card; text requires a title and description",
+    "chanpost": "Generate a fictional imageboard screenshot with repeated-digit post IDs",
+    "hodl": "Orange Bitcoin hype, coins, rocket, and a rising green chart",
+    "buythedip": "A collapsing red chart and irrationally optimistic Bitcoin slogans",
+    "kaliyuga": "Breaking-news bars announcing 426,877 years left in the Kali Yuga",
+    "censorface": "Frosted glass blur over every detected face",
+    "censorbar": "A black eye bar following each detected head tilt",
+    "redeyes": "Bloodshot sclera with fine red veins, preserving the iris",
+    "lasereyes": "Glowing red eyes and bright laser beams",
+    "firebreath": "Procedural flame jet from each detected mouth",
+    "prismglow": "Saturated prism reflections, bokeh, warm/cool light leaks, and glow",
+    "hellface": "Combine glowing laser eyes and fire breath",
     "rift": "Shatter the image into twisted mirrored shards around a neon dimensional rift",
     "tron": "Dark electric cyan contours with a bright neon glow",
     "thermal": "Simulated thermal camera colors from image brightness",
@@ -28,7 +51,7 @@ DESCRIPTIONS = {
     "warpface": "Enlarge the head and shrink facial features",
     "blockface": "Shrink the face and stretch the surrounding skin",
     "deepfry": "Extreme colors, JPEG artifacts, and random stickers",
-    "fatmagic": "Widen the face and detected upper body",
+    "fatmagic": "Broaden detected torsos smoothly with mild face widening",
     "tinyface": "Shrink the eyes, nose, and mouth together",
     "bigmouth": "Make the mouth much larger",
     "googly": "Make the eyes much larger",
@@ -61,7 +84,11 @@ TYPOGRAPHY = frozenset({"numbers", "letters"})
 EULER = frozenset({"droste", "complexsquare", "complexexp", "logpolar", "inversion"})
 ANIME = frozenset({"uwu", "blush", "sweat", "sparkle", "angry"})
 VORTEX = frozenset({"vortexcolumns", "eyevortex", "mouthvortex"})
-FACE_EFFECTS = FACE_MODES | ANIME | VORTEX | {"blockface", "warpface", "chudthor", "halo", "devilhorns", "dealwithit"}
+TRANSFORMERS = frozenset({'alienface','longface','goblin','giga','meltface','fatmagic'})
+FACE_MASKS = frozenset({'censorface','censorbar','redeyes','lasereyes','firebreath','hellface'})
+MEMES = frozenset({'combobreaker','youdied','wasted','animerays','achievement','chanpost','hodl','buythedip','kaliyuga','hornijail'})
+STYLIZED = frozenset({'prismglow'})
+FACE_EFFECTS = FACE_MODES | ANIME | VORTEX | TRANSFORMERS | FACE_MASKS | {"surveillance", "blockface", "warpface", "chudthor", "halo", "devilhorns", "dealwithit"}
 DETECTION_EFFECTS = FACE_EFFECTS | {"tron"}
 EFFECTS = frozenset(DESCRIPTIONS)
 
@@ -69,10 +96,10 @@ EFFECTS = frozenset(DESCRIPTIONS)
 def resolve_effect(name):
     if name not in EFFECTS:
         raise ValueError("Unknown effect. Use @sirmagick help to list commands.")
-    return secrets.choice(sorted(EFFECTS-{"random"})) if name == "random" else name
+    return secrets.choice(sorted(EFFECTS-{"random", "achievement"})) if name == "random" else name
 
 
-def apply_effect(image, detection, name):
+def apply_effect(image, detection, name, text=None):
     if name not in EFFECTS or name == "random":
         raise ValueError("Select an effect before processing.")
     if name in FACE_EFFECTS:
@@ -85,6 +112,21 @@ def apply_effect(image, detection, name):
         from .images import MAX_PIXELS
         if image.width*image.height*3 > MAX_PIXELS:
             raise ValueError("The ultrawide result would exceed 24 million pixels.")
+    if name == "surveillance":
+        from .surveillance import apply_effect as surveillance
+        return surveillance(image,detection)
+    if name in TRANSFORMERS:
+        from .face_transformers import apply_effect as transform
+        return transform(image,detection,name)
+    if name in FACE_MASKS:
+        from .face_masks import apply_effect as face_mask
+        return face_mask(image,detection,name)
+    if name in MEMES:
+        from .meme_frames import apply_effect as meme
+        return meme(image,name,text)
+    if name in STYLIZED:
+        from .stylized import apply_effect as stylized
+        return stylized(image,name)
     if name in {"tron"}:
         from .neon import apply_effect as neon_effect
         if detection is not None and image.size != (detection.width, detection.height):

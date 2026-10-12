@@ -68,11 +68,19 @@ Upload an image to a channel and mention the bot:
 
 | Command | Effect |
 |---|---|
+| `achievement` | Steam-style achievement card; text requires a title and description |
+| `alienface` | Long gray alien face with large dark eyes and tiny features |
 | `angry` | Adds an anime anger symbol |
+| `animerays` | Stretch the supplied anime action rays over the image |
 | `bigmouth` | Enlarges the mouth |
 | `blockface` | Shrinks the inner face and stretches the surrounding strip of skin |
 | `blush` | Adds textured cheek tint and small anime hatch marks |
+| `buythedip` | A collapsing red chart and irrationally optimistic Bitcoin slogans |
+| `censorbar` | A black eye bar following each detected head tilt |
+| `censorface` | Frosted glass blur over every detected face |
+| `chanpost` | Generate a fictional imageboard screenshot with repeated-digit post IDs |
 | `chudthor` | Creates a bizarre, more angular facial distortion |
+| `combobreaker` | Add a large C-C-C-COMBOBREAKER wordmark |
 | `complexexp` | Warps the image using a complex exponential |
 | `complexsquare` | Folds image coordinates using a complex square |
 | `crt` | Curved retro monitor, scanlines, and color fringes (Retro) |
@@ -84,26 +92,39 @@ Upload an image to a channel and mention the bot:
 | `extrude` | Colored sidewalls and shadows along image contours (Depth) |
 | `eyeswap` | Replaces the nose and mouth with copies of an eye |
 | `eyevortex` | Twisting cylindrical streams covered in repeated eyes |
-| `fatmagic` | Widens the face and detected torso (approximate body shape) |
+| `fatmagic` | Broaden detected torsos smoothly with mild face widening |
+| `firebreath` | Procedural flame jet from each detected mouth |
 | `fisheye` | Wide-angle lens bulge (Trippy) |
+| `giga` | Exaggerate the jaw width and chin |
 | `glitch` | Digital tearing, shifted bands, and RGB errors (Retro) |
+| `goblin` | Enlarge the nose and mouth and shrink the eyes |
 | `googly` | Enlarges the eyes |
 | `halftone` | Comic print dots and reduced colors (Retro) |
 | `halo` | A glowing golden halo aligned with each head |
 | `help` | Shows the command overview |
+| `hellface` | Combine glowing laser eyes and fire breath |
+| `hodl` | Orange Bitcoin hype, coins, rocket, and a rising green chart |
+| `hornijail` | Put the image behind the window panes of the horny jail meme |
 | `inversion` | Inverts the center and outer image through complex coordinates |
 | `julia` | Image-colored Julia fractal patterns (Fractal) |
 | `kaleidoscope` | Mirrors the image into six sectors |
+| `kaliyuga` | Breaking-news bars announcing 426,877 years left in the Kali Yuga |
+| `lasereyes` | Glowing red eyes and bright laser beams |
 | `letters` | Rebuilds the image from colored letters with varying sizes and density |
 | `logpolar` | Unwraps circles into straight bands |
+| `longface` | Stretch the face into a long narrow oval |
+| `meltface` | Let facial features melt downward |
 | `mouthvortex` | Twisting cylindrical streams covered in repeated mouths |
 | `newton` | Image-colored Newton fractal basins (Fractal) |
 | `nightvision` | Green low-light contrast, grain, and scanlines |
 | `numbers` | Rebuilds the image from colored digits with varying sizes and density |
+| `prismglow` | Saturated prism reflections, bokeh, warm/cool light leaks, and glow |
 | `random` | Selects a random available effect and names it in the result |
+| `redeyes` | Bloodshot sclera with fine red veins, preserving the iris |
 | `rgbghost` | Shifts color channels apart |
 | `rift` | Twisted mirrored shards, neon seams, and a dark dimensional tear |
 | `sparkle` | Adds anime sparkle stars |
+| `surveillance` | Face tracking locks, tactical status panels, REC, and UTC timestamp |
 | `sweat` | Adds an anime sweat drop |
 | `swirl` | Twists the image into a spiral |
 | `thanos` | Directional disintegration into drifting image-colored dust |
@@ -114,7 +135,9 @@ Upload an image to a channel and mention the bot:
 | `uwu` | Enlarges eyes slightly, shrinks the mouth, and adds soft blush |
 | `vortexcolumns` | Twisting cylindrical streams covered in repeated faces |
 | `warpface` | Enlarges the head and shrinks facial features |
+| `wasted` | Desaturate the scene and add the supplied wasted wordmark |
 | `wide` | Stretches the entire image to three times its width |
+| `youdied` | Darken the scene and add the supplied YOU DIED wordmark |
 | `zoom` | Adds zoom ghost exposures |
 
 Trippy and complex-coordinate effects do not require faces. `random` can select a face effect; if no face is detected, the job fails with the usual error message. Repeated `wide` applications increase the width again, up to the 24-million-pixel output limit. `uwu` adds cute facial proportions and blush; `blush` adds soft cheek tint and anime hatch marks.
@@ -124,6 +147,13 @@ Vortex modes use a working canvas capped at 1600 pixels on its longest side and 
 Without a URL, the bot uses an image attached to your command or the latest image in the channel. Bot-generated images can be processed again. Face effects apply to all detected faces; if no face is detected, the job fails with an error message. GIFs are processed as a single image using their first frame.
 
 Slash commands are registered at startup. If they do not appear in Discord, use mention commands instead. Bot replies, help text, and command descriptions are in English.
+
+
+`achievement` requires a `text` option: its first word is the title and the remaining words are the description (400 characters maximum). Example: `@sirmagick achievement TouchGrass Finally went outside.` Add an image attachment or an image URL at the end. The output is a 1200x650 card; `chanpost` produces a fictional 1200x820 screenshot with doubles/trips-or-higher post IDs and never connects to an imageboard. `hornijail` places the image behind three perspective-aligned window panes and returns the opaque template dimensions. Other new modes keep the input dimensions and alpha. Random mode skips `achievement` because it needs user text.
+
+The experimental `comic` and `anime` photo filters have been removed; character redraws need a separate generative model. `fatmagic` smoothly widens detected torsos when reliable shoulder/hip points exist; otherwise only the face is changed. `censorface` is a stylized blur and is not a guarantee of anonymization. Face masks and face transformations require a detected face; heavy edits can prevent detection on the next request.
+
+The supplied Anime Rays, YOU DIED, and wasted assets have white JPG backgrounds. White is removed during compositing; the Anime Rays image is stretched to the input aspect ratio.
 
 ## Optional settings
 

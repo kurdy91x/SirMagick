@@ -53,7 +53,7 @@ Outbound connections need HTTPS/WSS on TCP 443 and DNS; HTTP image links also ne
 
 ## Private data and licensing
 
-`.dockerignore` denies all files except explicit build inputs: Docker configuration, dependency/package metadata, Python application source, license documents, and the two effect overlays `sirmagick/assets/shades.png` and `sirmagick/assets/blunt.png`. The Dockerfile copies these overlays explicitly, and Setuptools packages exactly these two image assets. The build checks `/app` and the installed package, rejecting any other image files or `.env` and checking that both overlays are present. Official `.task` models are allowed. Private originals and comparison images remain excluded.
+`.dockerignore` denies all files except explicit build inputs and six exact effect overlays: `shades.png`, `blunt.png`, `anime.rays.jpg`, `wasted.gta.jpg`, `youdied.souls.jpg`, and `horni.jail.jpg`, all under `sirmagick/assets/`. The Dockerfile copies them explicitly, and Setuptools packages only those asset paths. The build checks copied/installed application files against `sirmagick.asset_manifest.ALLOWED_ASSETS`, rejects other images or `.env`, and verifies each overlay exists. Temporary package build files are removed first. Official `.task` models are allowed; private originals and comparisons are excluded.
 
 The image includes `/app/LICENSE`, `/app/THIRD_PARTY_NOTICES.md`, and `/app/licenses/Apache-2.0.txt`. MIT covers SirMagick's code; dependencies and models retain their own terms. See [third-party notices](THIRD_PARTY_NOTICES.md).
 

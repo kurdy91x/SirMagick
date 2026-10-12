@@ -9,6 +9,7 @@ from .effects import EFFECTS
 class Command:
     effect: str
     url: str | None = None
+    text: str | None = None
 
 
 def parse_command(content: str, bot_id: int) -> Command | None:
@@ -22,6 +23,15 @@ def parse_command(content: str, bot_id: int) -> Command | None:
     effect = parts[0].lower()
     if effect not in EFFECTS | {"help"}:
         raise ValueError("Unknown command. Use @sirmagick help to list effects.")
+    if effect == 'achievement':
+        from .effect_options import achievement_parts
+        words = parts[1:]
+        url = None
+        if words and urlsplit(words[-1].strip('<>')).scheme.lower() in {'http','https'}:
+            url = words.pop().strip('<>')
+        value = ' '.join(words)
+        achievement_parts(value)
+        return Command(effect,url,value)
     if len(parts) > 2 or (effect == "help" and len(parts) > 1):
         raise ValueError("Syntax: @SirMagick effect [image-url]")
     url = parts[1].strip("<>") if len(parts) == 2 else None

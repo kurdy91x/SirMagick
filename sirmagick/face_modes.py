@@ -75,6 +75,9 @@ def local_scale(pixels, points, scale, outer=2.6, padding=(1.2, 1.4), horizontal
 
 
 def apply_mode(image, detection, mode):
+    if mode == 'fatmagic':
+        from .face_transformers import apply_effect
+        return apply_effect(image,detection,mode)
     if mode == "random":
         return apply_mode(image, detection, secrets.choice(MODES))
     if mode == "eyeswap":
@@ -83,12 +86,6 @@ def apply_mode(image, detection, mode):
         return image.resize((image.width*3, image.height), Image.Resampling.LANCZOS)
     detection.require("face")
     result = np.array(image.convert("RGBA"))
-    if mode == "fatmagic":
-        for pose in detection.poses:
-            torso = [pose[i] for i in (11, 12, 23, 24) if pose[i].visibility > .5]
-            if len(torso) == 4:
-                local_scale(result, [(p.x, p.y) for p in torso], 1.55, outer=2.5,
-                            padding=(1.25, 1.45), horizontal=True)
     for face in detection.faces:
         points = np.array([(p.x, p.y) for p in face], dtype=np.float32)
         if mode == "tinyface":
@@ -99,10 +96,6 @@ def apply_mode(image, detection, mode):
         elif mode == "googly":
             for eye in EYES:
                 local_scale(result, points[list(eye)], 1.8, outer=2.8, padding=(1.25, 1.5))
-        elif mode == "fatmagic":
-            # Prototype: widen the face too, without relying on a body mask.
-            local_scale(result, points[list(OVAL)], 1.32, outer=1.8,
-                        padding=(1.0, 1.05), horizontal=True)
         else:
             raise ValueError(mode)
     return Image.fromarray(result)

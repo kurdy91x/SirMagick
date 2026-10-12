@@ -21,16 +21,18 @@ RUN apt-get update \
 COPY requirements.txt pyproject.toml ./
 COPY LICENSE THIRD_PARTY_NOTICES.md ./
 COPY licenses/Apache-2.0.txt ./licenses/Apache-2.0.txt
-# Copy source and exactly the two public effect overlays; never private previews.
+# Copy source and exactly the allowlisted effect overlays; never private previews.
 COPY sirmagick/*.py ./sirmagick/
 COPY sirmagick/assets/shades.png sirmagick/assets/blunt.png ./sirmagick/assets/
+COPY sirmagick/assets/anime.rays.jpg sirmagick/assets/wasted.gta.jpg sirmagick/assets/youdied.souls.jpg ./sirmagick/assets/
+COPY sirmagick/assets/horni.jail.jpg ./sirmagick/assets/
 RUN python -m pip install . \
     && python -c "import shutil; shutil.rmtree('/app/build', ignore_errors=True)" \
     && python -m sirmagick download-models --models /app/models \
     && python -c "import cv2, discord, mediapipe; from sirmagick.detection import Detector; detector = Detector(__import__('pathlib').Path('/app/models')); detector.close()"
 
 # Check both the copied source and the installed package before publishing.
-RUN python -c "from pathlib import Path; from importlib.metadata import distribution; roots = [Path('/app'), Path(distribution('sir-magick').locate_file('sirmagick'))]; allowed = {Path('/app/sirmagick/assets') / name for name in ('shades.png', 'blunt.png')} | {roots[1] / 'assets' / name for name in ('shades.png', 'blunt.png')}; forbidden = [str(p) for root in roots for p in root.rglob('*') if p.is_file() and (p.name == '.env' or (p.suffix.lower() in {'.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp', '.tif', '.tiff', '.avif', '.heic'} and p not in allowed))]; assert not forbidden, 'Unexpected images or secrets in application files: ' + repr(forbidden); assert all(p.is_file() for p in allowed), 'Missing effect overlay assets'; print('Image audit passed: only the two explicit effect overlays are allowed; no .env')"
+RUN python -c "from pathlib import Path; from importlib.metadata import distribution; from sirmagick.asset_manifest import ALLOWED_ASSETS; roots = [Path('/app'), Path(distribution('sir-magick').locate_file('sirmagick'))]; allowed = {Path('/app/sirmagick/assets') / name for name in ALLOWED_ASSETS} | {roots[1] / 'assets' / name for name in ALLOWED_ASSETS}; forbidden = [str(p) for root in roots for p in root.rglob('*') if p.is_file() and (p.name == '.env' or (p.suffix.lower() in {'.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp', '.tif', '.tiff', '.avif', '.heic'} and p not in allowed))]; assert not forbidden, 'Unexpected images or secrets in application files: ' + repr(forbidden); assert all(p.is_file() for p in allowed), 'Missing effect overlay assets'; print('Image audit passed: only the explicit effect overlays are allowed; no .env')"
 
 USER 10001:10001
 CMD ["python", "-m", "sirmagick", "bot"]

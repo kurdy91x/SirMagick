@@ -53,3 +53,7 @@ available under `/usr/share/doc/*/copyright`; the Python installation includes
 its own license. Python transitive dependencies and bundled native libraries
 retain their original terms and notices. This document is an overview, not a
 complete license audit of a particular published image.
+
+## Supplied meme overlays
+
+`sirmagick/assets/anime.rays.jpg`, `wasted.gta.jpg`, `youdied.souls.jpg`, and `horni.jail.jpg` are maintainer-supplied reference graphics. The game wordmarks refer to their respective third-party games; the MIT license on application code does not grant rights to third-party artwork or trademarks. Original sources and usage rights for these supplied graphics have not been independently verified. `chanpost` and `achievement` use code-drawn layouts, not remote services or screenshots shipped as templates.

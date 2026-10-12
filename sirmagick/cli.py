@@ -51,6 +51,8 @@ def main(argv=None) -> int:
         effect_parser.add_argument("--models", type=Path, default=Path("models"))
         effect_parser.add_argument("--max-side", type=int, default=1024)
         effect_parser.add_argument("--max-people", type=int, default=20)
+        if name == 'achievement':
+            effect_parser.add_argument('--text',required=True,help='First word is the title; remaining words are the description')
         effect_parser.set_defaults(require="face")
     commands.add_parser("bot", help="Start the Discord bot (.env)")
     args = parser.parse_args(argv)
@@ -73,7 +75,7 @@ def main(argv=None) -> int:
 def run_detection(args) -> int:
     from .images import image_paths, load_image
     from .effects import FACE_EFFECTS, DETECTION_EFFECTS, apply_effect
-    processor = lambda image, detection=None: apply_effect(image, detection, args.command)
+    processor = lambda image, detection=None: apply_effect(image, detection, args.command, text=getattr(args,'text',None))
     if args.command not in DETECTION_EFFECTS and args.command != "detect":
         detector_context = lambda: nullcontext(None)
     else:

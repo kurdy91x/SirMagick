@@ -72,7 +72,7 @@ def serve():
                         detection = detector.detect(image)
                         if effect in FACE_EFFECTS:
                             detection.require("face")
-                    result = apply_effect(image, detection, effect)
+                    result = apply_effect(image, detection, effect, text=request.get('text'))
                     output = Path(request["destination"]).with_suffix(".png")
                     if was_random:
                         output = output.with_name(output.stem+"-random-"+effect+output.suffix)

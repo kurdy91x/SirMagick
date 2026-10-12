@@ -20,32 +20,15 @@ LOGGER.setLevel(logging.INFO)
 SLASH_PREFIX = "sm_"
 
 HELP = (
-    "**SirMagick – image effects**\n"
-    "`/sm_blockface` – shrink the inner face and stretch the surrounding skin\n"
-    "`/sm_warpface` – enlarge the head and shrink facial features\n"
-    "`/sm_chudthor` – surreal, angular face distortion\n"
-    "`/sm_deepfry` – extreme colors, JPEG artifacts, and random stickers\n"
-    "**Face:** `/sm_fatmagic`, `/sm_tinyface`, `/sm_bigmouth`, `/sm_googly`, `/sm_eyeswap`\n"
-    "**Ultrawide:** `/sm_wide` – stretch the image to triple width\n"
-    "**Retro:** `/sm_glitch`, `/sm_crt`, `/sm_halftone`\n"
-    "**Fractal:** `/sm_julia`, `/sm_newton`\n"
-    "**Depth:** `/sm_extrude`, `/sm_emboss`\n"
-    "**Typography:** `/sm_numbers`, `/sm_letters`\n"
-      "**Neon:** `/sm_tron`\n"
-      "**Rift:** `/sm_rift`\n"
-      "**Cinematic:** `/sm_thermal`, `/sm_nightvision`, `/sm_thanos`, `/sm_dealwithit`\n"
-    "**Face fantasy:** `/sm_halo`, `/sm_devilhorns`\n"
-    "**Vortex:** `/sm_vortexcolumns`, `/sm_eyevortex`, `/sm_mouthvortex`\n"
-    "**Lens:** `/sm_fisheye`\n"
-    "**Trippy:** `/sm_zoom`, `/sm_tunnel`, `/sm_kaleidoscope`, `/sm_swirl`, `/sm_rgbghost`\n"
-    "**Euler:** `/sm_droste`, `/sm_complexsquare`, `/sm_complexexp`, `/sm_logpolar`, `/sm_inversion`\n"
-    "**Anime:** `/sm_uwu`, `/sm_blush`, `/sm_sweat`, `/sm_sparkle`, `/sm_angry`\n"
-    "`/sm_random` – random effect; `/sm_help` – this help\n\n"
-    "Upload an **image** or provide a **url** with any effect. "
-    "Leave both empty to use the latest channel image, including previous bot results. "
-    "All detected faces are processed. GIFs use the first frame.\n"
-    "You can also use `@SirMagick blockface` or `@SirMagick help`."
+    "**SirMagick - image effects**\n"
+    + ', '.join('`/sm_'+name+'`' for name in sorted(DESCRIPTIONS))
+    + "\n`/sm_help` - this help\n\n"
+    "Upload an image or provide a public url; otherwise use the latest channel image. "
+    "All detected faces are processed; GIFs use the first frame. "
+    "Achievement requires text: first word = title, rest = description. "
+    "Mention commands also work: `@SirMagick blockface`."
 )
+
 
 
 class InteractionMessage:
@@ -107,10 +90,7 @@ class MagickBot(discord.Client):
         descriptions = DESCRIPTIONS
 
         def effect_command(effect):
-            @discord.app_commands.describe(image="Upload an image; otherwise use the latest channel image",
-                                           url="Alternatively, provide a public image URL")
-            async def callback(interaction: discord.Interaction,
-                               image: discord.Attachment | None = None, url: str | None = None):
+            async def dispatch(interaction,image,url,value=None):
                 LOGGER.info("Slash command: /%s | Guild ID %s | Channel ID %s", SLASH_PREFIX+effect,
                             interaction.guild_id, interaction.channel_id)
                 if not self.allowed(interaction.guild, interaction.channel):
@@ -119,9 +99,29 @@ class MagickBot(discord.Client):
                 if image and url:
                     await interaction.response.send_message("Provide either an image or a URL, not both.", ephemeral=True)
                     return
+                if effect == 'achievement':
+                    from .effect_options import achievement_parts
+                    try:
+                        achievement_parts(value)
+                    except ValueError as exc:
+                        await interaction.response.send_message(str(exc),ephemeral=True)
+                        return
                 await interaction.response.defer(thinking=True)
-                content = f"<@{self.user.id}> {effect}" + (f" {url}" if url else "")
+                content = f"<@{self.user.id}> {effect}" + (f" {value}" if value else "") + (f" {url}" if url else "")
                 await self.on_message(InteractionMessage(interaction, content, image))
+            @discord.app_commands.describe(image="Upload an image; otherwise use the latest channel image",
+                                           url="Alternatively, provide a public image URL")
+            async def callback(interaction: discord.Interaction,
+                               image: discord.Attachment | None = None,url: str | None = None):
+                await dispatch(interaction,image,url)
+            if effect == 'achievement':
+                @discord.app_commands.describe(text="First word = achievement title; remaining words = description",
+                                               image="Upload an image; otherwise use the latest channel image",
+                                               url="Alternatively, provide a public image URL")
+                async def achievement_callback(interaction: discord.Interaction,text: str,
+                                               image: discord.Attachment | None = None,url: str | None = None):
+                    await dispatch(interaction,image,url,text)
+                callback = achievement_callback
             return discord.app_commands.Command(name=SLASH_PREFIX+effect, description=descriptions[effect], callback=callback)
 
         for effect in descriptions:
@@ -294,6 +294,7 @@ class MagickBot(discord.Client):
                 stage = "processing"
                 output = await self.worker.run({
                     "effect": job.command.effect, "source": str(source),
+                    "text": getattr(job.command,'text',None),
                     "destination": str(directory / "result"), "models": str(cfg.models),
                     "max_side": cfg.max_side, "max_people": cfg.max_people,
                     "max_output": min(cfg.max_output, job.message.guild.filesize_limit),
