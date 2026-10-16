@@ -39,7 +39,7 @@ For slash commands, type `/sm_` and choose an effect, such as `/sm_halo` or `/sm
 | Face fantasy | `halo`, `devilhorns`, `vortexcolumns` |
 | Feature vortex | `eyevortex`, `mouthvortex` |
 | Lens | `fisheye` |
-| Face transformers | `alienface`, `longface`, `goblin`, `giga`, `meltface`, `fatmagic` |
+| Face transformers | `alienface`, `longface`, `goblin`, `giga`, `meltface`, `fatmagic`, `yakub`, `soyjak`, `wojak_chud`, `wojak_doomer`, `brainlet`, `wojak_npc`, `wojak_npcangry`, `giraffe` |
 | Face masks | `censorface`, `censorbar`, `redeyes`, `lasereyes`, `firebreath`, `hellface` |
 | Surveillance HUD | `surveillance` |
 | Meme layouts | `combobreaker`, `youdied`, `wasted`, `animerays`, `achievement`, `chanpost`, `hornijail` |
@@ -74,7 +74,7 @@ Input limits: 25 MiB and 24 million pixels. Ultrawide also checks the resulting 
 
 Effects have fixed strengths. `fatmagic` uses approximate torso landmarks rather than a precise person mask, so it can also stretch nearby background. Trippy and Euler effects work without a face or detection models. Complex-coordinate effects reflect samples outside the image and regularize singularities. Anime decals follow facial landmarks and can accumulate on repeated application.
 
-Settings and defaults are documented in [.env.example](https://github.com/kurdy91x/SirMagick/blob/main/.env.example) and [compose.yaml](https://github.com/kurdy91x/SirMagick/blob/main/compose.yaml). Private images and tokens are never bundled in the build context: `.dockerignore` allows only the required source, build/license files, and the six explicit effect overlays. A build-time audit rejects all other image files and `.env` in the application directories.
+Settings and defaults are documented in [.env.example](https://github.com/kurdy91x/SirMagick/blob/main/.env.example) and [compose.yaml](https://github.com/kurdy91x/SirMagick/blob/main/compose.yaml). Private images and tokens are never bundled in the build context: `.dockerignore` allows only the required source, build/license files, and the seven explicit effect overlays. A build-time audit rejects all other image files and `.env` in the application directories.
 
 ## Local development
 
@@ -95,7 +95,7 @@ All specific bot effects are also available as local CLI commands; `random` is c
 .venv\Scripts\python.exe -m unittest discover -s tests -q
 ```
 
-Local comparison scripts are in `tools/preview_*.py`. They write original / first pass / second pass comparisons under ignored `examples/` subfolders. Private image assets, examples, outputs, `.env`, models, and virtual environments are excluded from Git. Only the six allowlisted effect overlays are tracked and packaged. No personal photos are needed by the automated tests.
+Local comparison scripts are in `tools/preview_*.py`. They write original / first pass / second pass comparisons under ignored `examples/` subfolders. Private image assets, examples, outputs, `.env`, models, and virtual environments are excluded from Git. Only the seven allowlisted effect overlays are tracked and packaged. No personal photos are needed by the automated tests.
 
 To compare the rebuilt anime effects across your private test images:
 
@@ -139,3 +139,7 @@ Use `/sm_metalcover text:SEPULCHER Beneath the Last Sun` or `@sirmagick metalcov
 `metalcover` draws angular thorns, `blackmetalcover` draws branching roots, and `deathmetalcover` draws compact jagged extensions. The three logo fonts are Metal Lord (Metalcover), Dystopian Canticle (Blackmetalcover), and Art Dystopia (Deathmetalcover). Metalcover keeps a dark photographic monochrome look; Blackmetalcover uses harsh xerox-style black and white; Deathmetalcover uses deep red and charcoal. Covers use square center crops, grain, vignette, and scratches. They produce opaque 900x900 covers on CPU without detection or additional models. Long text is fitted to the available space. Random mode excludes these commands because they require text. Private previews: `python tools/preview_new_effects.py --modes metalcover blackmetalcover deathmetalcover`.
 
 Image overlays live in `sirmagick/assets/img/`; reviewed font binaries and their license notices live in `sirmagick/assets/font/`. Original font ZIP archives are excluded from Git and Docker. Art Dystopia and Metal Lord are listed as Public Domain by their source pages; Dystopian Canticle uses SIL OFL 1.1. Per-font sources and license information are documented in `THIRD_PARTY_NOTICES.md`; the original SIL OFL license is bundled with Dystopian Canticle.
+
+`giraffe` works best with a clearly visible, unobstructed neck. Scarves, raised collars, overlapping shoulders, and hair hiding the neck can cause visible artifacts. It is an experimental cut-and-composite effect: the segmented head is translated intact, only a short foreground neck/side-hair band is vertically scaled, and the old head area is inpainted. It uses optional person masks from the existing CPU pose model, with a color-based fallback. The band is masked to exclude background and newly entering shoulders. The head is translated without scaling; shoulders and the lower body remain fixed. Background outside the edited crop and the lower body stay unchanged. Top canvas space is added only when needed. Hair/ear extraction and background repair can still produce visible seams, especially on repeated passes. `wojak_doomer`, `brainlet`, `wojak_npc`, `wojak_npcangry`, and `soyjak` are photo-based Wojak effects. Doomer includes the mirrored cigarette-and-smoke overlay at the mouth corner. `wojak_npc` uses the normal resigned expression; `wojak_npcangry` uses angry eyebrows. Both share dot eyes, a hooked nose, and the same thick straight mouth. All detected faces are processed. Private original / 1x / 2x comparisons: `python tools/preview_wojak.py`, under ignored `examples/wojak-review/`.
+
+`wojak_chud` adds narrow eyes behind rectangular ink glasses, forehead creases, exaggerated thick closed lips, and a long angular face. It is separate from the original `chudthor` distortion.

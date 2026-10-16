@@ -25,7 +25,7 @@ COPY licenses/Apache-2.0.txt ./licenses/Apache-2.0.txt
 COPY sirmagick/*.py ./sirmagick/
 COPY sirmagick/assets/img/shades.png sirmagick/assets/img/blunt.png ./sirmagick/assets/img/
 COPY sirmagick/assets/img/anime.rays.jpg sirmagick/assets/img/wasted.gta.jpg sirmagick/assets/img/youdied.souls.jpg ./sirmagick/assets/img/
-COPY sirmagick/assets/img/horni.jail.jpg ./sirmagick/assets/img/
+COPY sirmagick/assets/img/horni.jail.jpg sirmagick/assets/img/cig.leftside.jpg ./sirmagick/assets/img/
 COPY sirmagick/assets/font/Dystopian-Canticle-Regular.otf sirmagick/assets/font/license_Dystopian-Canticle.txt ./sirmagick/assets/font/
 COPY ["sirmagick/assets/font/ArtDystopia.ttf", "sirmagick/assets/font/Metal Lord.otf", "./sirmagick/assets/font/"]
 RUN python -m pip install . \

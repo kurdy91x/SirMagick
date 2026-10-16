@@ -1,6 +1,6 @@
 """Library-independent results in original image coordinates."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 class ImageError(ValueError):
@@ -28,6 +28,7 @@ class Detection:
     faces: list[list[Point]]
     poses: list[list[Point]]
     elapsed_seconds: float
+    person_mask: object = field(default=None,repr=False,compare=False)
 
     def require(self, kind: str) -> None:
         if kind not in {"face", "body", "any"}:

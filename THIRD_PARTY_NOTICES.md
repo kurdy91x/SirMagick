@@ -56,7 +56,7 @@ complete license audit of a particular published image.
 
 ## Supplied meme overlays
 
-`sirmagick/assets/img/anime.rays.jpg`, `wasted.gta.jpg`, `youdied.souls.jpg`, and `horni.jail.jpg` are maintainer-supplied reference graphics. The game wordmarks refer to their respective third-party games; the MIT license on application code does not grant rights to third-party artwork or trademarks. Original sources and usage rights for these supplied graphics have not been independently verified. `chanpost` and `achievement` use code-drawn layouts, not remote services or screenshots shipped as templates.
+`sirmagick/assets/img/anime.rays.jpg`, `wasted.gta.jpg`, `youdied.souls.jpg`, `horni.jail.jpg`, and `cig.leftside.jpg` are maintainer-supplied reference graphics. The game wordmarks refer to their respective third-party games; the MIT license on application code does not grant rights to third-party artwork or trademarks. Original sources and usage rights for these supplied graphics have not been independently verified. `chanpost` and `achievement` use code-drawn layouts, not remote services or screenshots shipped as templates.
 
 ## Bundled font
 

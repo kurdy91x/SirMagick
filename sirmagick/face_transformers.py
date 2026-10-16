@@ -7,7 +7,7 @@ from .chudthor import OVAL
 from .warpface import EYES, MOUTH, NOSE
 from .effect_canvas import working,restore,points_for
 
-MODES = ('alienface','longface','goblin','giga','meltface','fatmagic')
+MODES = ('alienface','longface','goblin','giga','meltface','fatmagic','yakub')
 
 
 def warp_region(pixels,points,sx=1.,sy=1.,shift=(0.,0.),axis=None,padding=(1.,1.),vertical_limits=None):
@@ -53,6 +53,9 @@ def warp_region(pixels,points,sx=1.,sy=1.,shift=(0.,0.),axis=None,padding=(1.,1.
 def apply_effect(image,detection,mode):
     if mode not in MODES:
         raise ValueError('Unknown face transformer.')
+    if mode == 'yakub':
+        from .yakub import apply_effect as yakub
+        return yakub(image,detection)
     detection.require('face')
     canvas = working(image)
     pixels = np.array(canvas)

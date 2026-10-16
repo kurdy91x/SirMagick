@@ -4,6 +4,14 @@ import secrets
 from .effect_options import TEXT_VALIDATORS
 
 DESCRIPTIONS = {
+    "wojak_chud": "Angular Chud Wojak with rectangular glasses, thick lips, and forehead creases",
+    "giraffe": "Needs a clearly visible neck; extends only neck and side hair and moves the head upward",
+    "wojak_doomer": "Tired drooping eyes, dark circles, and a cigarette at the mouth corner",
+    "brainlet": "Compress the upper skull into a tiny cranium",
+    "wojak_npc": "Gray NPC Wojak with dot eyes, a hooked nose, and a straight mouth",
+    "wojak_npcangry": "Angry gray NPC Wojak with sharply angled eyebrows",
+    "soyjak": "Surprised photo Wojak with enlarged eyes, open mouth, and ink stubble",
+    "yakub": "Inflate the forehead and upper skull into a giant balloon-shaped head",
     "metalcover": "Distressed monochrome album cover with an angular thorn logo; text: BAND | Album",
     "blackmetalcover": "Distressed monochrome album cover with a branching root logo; text: BAND | Album",
     "deathmetalcover": "Distressed monochrome album cover with a dense jagged logo; text: BAND | Album",
@@ -88,11 +96,11 @@ TYPOGRAPHY = frozenset({"numbers", "letters"})
 EULER = frozenset({"droste", "complexsquare", "complexexp", "logpolar", "inversion"})
 ANIME = frozenset({"uwu", "blush", "sweat", "sparkle", "angry"})
 VORTEX = frozenset({"vortexcolumns", "eyevortex", "mouthvortex"})
-TRANSFORMERS = frozenset({'alienface','longface','goblin','giga','meltface','fatmagic'})
+TRANSFORMERS = frozenset({'alienface','longface','goblin','giga','meltface','fatmagic','yakub','soyjak','wojak_doomer','brainlet','wojak_npc','wojak_npcangry','wojak_chud'})
 FACE_MASKS = frozenset({'censorface','censorbar','redeyes','lasereyes','firebreath','hellface'})
 MEMES = frozenset({'combobreaker','youdied','wasted','animerays','achievement','chanpost','hodl','buythedip','kaliyuga','hornijail'})
 STYLIZED = frozenset({'prismglow'})
-FACE_EFFECTS = FACE_MODES | ANIME | VORTEX | TRANSFORMERS | FACE_MASKS | {"surveillance", "blockface", "warpface", "chudthor", "halo", "devilhorns", "dealwithit"}
+FACE_EFFECTS = FACE_MODES | ANIME | VORTEX | TRANSFORMERS | FACE_MASKS | {"giraffe", "surveillance", "blockface", "warpface", "chudthor", "halo", "devilhorns", "dealwithit"}
 DETECTION_EFFECTS = FACE_EFFECTS | {"tron"}
 EFFECTS = frozenset(DESCRIPTIONS)
 
@@ -122,6 +130,18 @@ def apply_effect(image, detection, name, text=None):
     if name in {'metalcover','blackmetalcover','deathmetalcover'}:
         from .metalcover import apply_effect as metalcover
         return metalcover(image,name,text)
+    if name == "wojak_chud":
+        from .chud_wojak import apply_effect as chud_wojak
+        return chud_wojak(image,detection)
+    if name == "giraffe":
+        from .giraffe import apply_effect as giraffe
+        return giraffe(image,detection)
+    if name in {"wojak_doomer","brainlet","wojak_npc","wojak_npcangry"}:
+        from .wojak import apply_effect as wojak
+        return wojak(image,detection,name)
+    if name == "soyjak":
+        from .soyjak import apply_effect as soyjak
+        return soyjak(image,detection)
     if name in TRANSFORMERS:
         from .face_transformers import apply_effect as transform
         return transform(image,detection,name)

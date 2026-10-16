@@ -78,6 +78,7 @@ Upload an image to a channel and mention the bot:
 | `blackmetalcover` | Monochrome album cover with a branching root logo; text: TITLE subtitle text |
 | `blockface` | Shrinks the inner face and stretches the surrounding strip of skin |
 | `blush` | Adds textured cheek tint and small anime hatch marks |
+| `brainlet` | Compress the upper skull into a tiny cranium |
 | `buythedip` | A collapsing red chart and irrationally optimistic Bitcoin slogans |
 | `censorbar` | A black eye bar following each detected head tilt |
 | `censorface` | Frosted glass blur over every detected face |
@@ -100,6 +101,7 @@ Upload an image to a channel and mention the bot:
 | `firebreath` | Procedural flame jet from each detected mouth |
 | `fisheye` | Wide-angle lens bulge (Trippy) |
 | `giga` | Exaggerate the jaw width and chin |
+| `giraffe` | Longer neck and side hair; needs a clearly visible neck for good results |
 | `glitch` | Digital tearing, shifted bands, and RGB errors (Retro) |
 | `goblin` | Enlarge the nose and mouth and shrink the eyes |
 | `googly` | Enlarges the eyes |
@@ -129,6 +131,7 @@ Upload an image to a channel and mention the bot:
 | `rgbghost` | Shifts color channels apart |
 | `rift` | Twisted mirrored shards, neon seams, and a dark dimensional tear |
 | `sparkle` | Adds anime sparkle stars |
+| `soyjak` | Surprised photo Wojak with enlarged eyes, open mouth, and ink stubble |
 | `surveillance` | Face tracking locks, tactical status panels, REC, and UTC timestamp |
 | `sweat` | Adds an anime sweat drop |
 | `swirl` | Twists the image into a spiral |
@@ -142,6 +145,11 @@ Upload an image to a channel and mention the bot:
 | `warpface` | Enlarges the head and shrinks facial features |
 | `wasted` | Desaturate the scene and add the supplied wasted wordmark |
 | `wide` | Stretches the entire image to three times its width |
+| `wojak_chud` | Angular Chud Wojak with rectangular glasses, thick lips, and forehead creases |
+| `wojak_doomer` | Tired drooping eyes, dark circles, a cold desaturated face, and a cigarette |
+| `wojak_npc` | Gray NPC Wojak with dot eyes, a hooked nose, and a straight mouth |
+| `wojak_npcangry` | Angry NPC Wojak with sharply angled eyebrows |
+| `yakub` | Inflate the forehead and upper skull into a giant balloon-shaped head |
 | `youdied` | Darken the scene and add the supplied YOU DIED wordmark |
 | `zoom` | Adds zoom ghost exposures |
 
@@ -193,3 +201,5 @@ All Discord slash commands use the `sm_` prefix: `/sm_blockface`, `/sm_halo`, `/
 ### Metal album covers
 
 `metalcover`, `blackmetalcover`, and `deathmetalcover` require text in the form `TITLE subtitle text`. Example: `@sirmagick blackmetalcover SEPULCHER Beneath the Last Sun`. Slash commands have a required `text` option. The first word appears as the title at the top (up to 48 characters); the remaining words appear at the bottom (up to 100 characters). No pipe separator is needed. The three logo styles are angular thorns, branching roots, and dense jagged lettering. Metalcover is dark photographic monochrome, Blackmetalcover is harsh xerox-style black and white, and Deathmetalcover is deep red and charcoal. The three logo fonts are Metal Lord (Metalcover), Dystopian Canticle (Blackmetalcover), and Art Dystopia (Deathmetalcover). They produce opaque 900x900 covers with grain, scratches, and dark edges, using CPU only and no face detection. The input is center-cropped to a square.
+
+Giraffe works best with a clearly visible, unobstructed neck. Scarves, raised collars, overlapping shoulders, and hair hiding the neck can produce artifacts. It cuts out and moves the head intact, vertically scales only a short foreground neck/side-hair band, and fills the old head position. It uses CPU person masks from the existing pose model when available. Only necessary top headroom is added. The head retains its proportions, while shoulders and the lower body remain fixed. Extraction and background-fill seams remain experimental, particularly on repeated passes. The Wojak modes (`soyjak`, `wojak_doomer`, `brainlet`, `wojak_npc`, `wojak_npcangry`) retain the original photo identity. Doomer uses the supplied cigarette-and-smoke asset, mirrored to match face direction. `wojak_npc` is the normal resigned expression; `wojak_npcangry` adds angry eyebrows. Both share dot eyes, a hooked nose, and a thick straight mouth.

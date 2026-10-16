@@ -77,7 +77,7 @@ def serve():
                         if detector is None:
                             from .detection import Detector
                             detector = Detector(Path(request["models"]), request["max_side"], request["max_people"])
-                        detection = detector.detect(image)
+                        detection = detector.detect(image,segmentation=True) if effect=="giraffe" else detector.detect(image)
                         if effect in FACE_EFFECTS:
                             detection.require("face")
                     logger.info('Image worker: effect=%s stage=render elapsed=%.2fs',effect,perf_counter()-started)

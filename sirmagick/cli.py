@@ -8,7 +8,7 @@ from time import perf_counter
 
 
 def main(argv=None) -> int:
-    parser = argparse.ArgumentParser(description="Sir Magick – local CPU image detection")
+    parser = argparse.ArgumentParser(description="Sir Magick â€“ local CPU image detection")
     commands = parser.add_subparsers(dest="command", required=True)
     download = commands.add_parser("download-models", help="Download the official models")
     download.add_argument("--models", type=Path, default=Path("models"))
@@ -113,10 +113,11 @@ def run_detection(args) -> int:
                     details = {"effect": args.command, "width": image.width, "height": image.height,
                                "requires_detection": False}
                 else:
-                    result = detector.detect(image)
+                    result = detector.detect(image,segmentation=True) if args.command=="giraffe" else detector.detect(image)
                     if args.command in FACE_EFFECTS or args.command == "detect":
                         result.require(args.require)
                     details = asdict(result)
+                    details.pop("person_mask",None)
                 destination.parent.mkdir(parents=True, exist_ok=True)
                 effect_started = perf_counter()
                 processed = processor(image) if result is None else processor(image, result)
